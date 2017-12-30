@@ -1,0 +1,19 @@
+*~
+*.swp
+*.pyc
+__pycache__
+
+# docs
+_build
+
+# setuptools
+*.egg-info
+build
+dist
+
+# tests
+*.sqlite3
+.cache
+.coverage
+.tox
+htmlcov
