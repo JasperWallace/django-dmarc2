@@ -15,6 +15,9 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from dmarc import urls as dmarc_urls
+
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^dmarc/', include(dmarc_urls, namespace='dmarc')),
 ]
