@@ -1,8 +1,8 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 """
 DMARC views
 http://dmarc.org/resources/specification/
@@ -28,6 +28,7 @@ class Echo(object):
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
+
 
 def _sql_cursor(request_args):
     """Returns a cursor according to users request"""
@@ -127,6 +128,7 @@ AND dkim_dmarc_result.record_type = 'dkim'
 
     return cursor
 
+
 @staff_member_required
 def dmarc_index(request):
 
@@ -134,6 +136,7 @@ def dmarc_index(request):
         "reports": 'TODO',
     }
     return render(request, 'dmarc/report.html', context)
+
 
 @staff_member_required
 def dmarc_report(request):
@@ -158,6 +161,7 @@ def dmarc_report(request):
         "reports": reports,
     }
     return render(request, 'dmarc/report.html', context)
+
 
 @staff_member_required
 def dmarc_csv(request):
@@ -187,6 +191,7 @@ def dmarc_csv(request):
     response['Content-Disposition'] = cd
 
     return response
+
 
 @staff_member_required
 def dmarc_json(request):

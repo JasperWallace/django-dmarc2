@@ -1,8 +1,8 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 """
 DMARC models for managing Aggregate Reports
@@ -31,5 +31,6 @@ class ReportAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
 
 admin.site.register(Report, ReportAdmin)

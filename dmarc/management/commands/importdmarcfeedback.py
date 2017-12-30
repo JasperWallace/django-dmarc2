@@ -1,10 +1,9 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
-"""Import DMARC Feedback Reports
-"""
+# ----------------------------------------------------------------------
+"""Import DMARC Feedback Reports"""
 from __future__ import unicode_literals
 
 import logging
@@ -31,6 +30,7 @@ from dmarc.models import FBReport, FBReporter
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     """
     Command class for importing DMARC Feedback Reports
@@ -39,7 +39,9 @@ class Command(BaseCommand):
     help = 'Imports a DMARC Feedback Report from an email'
 
     def add_arguments(self, parser):
-        parser.add_argument('-e', '--email',
+        parser.add_argument(
+            '-e',
+            '--email',
             type=FileType('r'),
             default=False,
             help='Import from email file, or - for stdin'
@@ -85,8 +87,8 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             try:
                 report.reporter = FBReporter.objects.create(
-                    org_name = dmarc_reporter,
-                    email = dmarc_reporter,
+                    org_name=dmarc_reporter,
+                    email=dmarc_reporter,
                 )
             except:
                 msg = 'Failed to find or create reporter {}'.format(dmarc_reporter)
@@ -95,8 +97,8 @@ class Command(BaseCommand):
         except:
             msg = 'Unable to get rfc822 report'
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-',suffix='.eml')
-            tmpf = os.fdopen(tf[0],'w')
+            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(tf[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
             msg = 'Saved as: {}'.format(tf[1])
@@ -218,8 +220,8 @@ class Command(BaseCommand):
         except:
             msg = 'Failed save from {}'.format(report.reporter)
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-',suffix='.eml')
-            tmpf = os.fdopen(tf[0],'w')
+            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(tf[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
             msg = 'Saved as: {}'.format(tf[1])
@@ -235,8 +237,8 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             try:
                 report.reporter = FBReporter.objects.create(
-                    org_name = dmarc_reporter,
-                    email = dmarc_reporter,
+                    org_name=dmarc_reporter,
+                    email=dmarc_reporter,
                 )
             except:
                 msg = 'Failed to find or create reporter {}'.format(dmarc_reporter)
@@ -245,8 +247,8 @@ class Command(BaseCommand):
         except:
             msg = 'Unable to get feedback report'
             logger.warning(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-',suffix='.eml')
-            tmpf = os.fdopen(tf[0],'w')
+            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(tf[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
             msg = 'Saved as: {}'.format(tf[1])
@@ -307,8 +309,8 @@ class Command(BaseCommand):
         except:
             msg = 'Failed save from {}'.format(dmarc_reporter)
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-',suffix='.eml')
-            tmpf = os.fdopen(tf[0],'w')
+            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(tf[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
             msg = 'Saved as: {}'.format(tf[1])

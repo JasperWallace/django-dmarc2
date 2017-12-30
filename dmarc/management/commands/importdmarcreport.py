@@ -1,10 +1,9 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
-"""Import DMARC Aggregate Reports
-"""
+# ----------------------------------------------------------------------
+"""Import DMARC Aggregate Reports"""
 from __future__ import unicode_literals
 
 import gzip
@@ -39,12 +38,16 @@ class Command(BaseCommand):
     help = 'Imports a DMARC Aggregate Report from either email or xml'
 
     def add_arguments(self, parser):
-        parser.add_argument('-e', '--email',
+        parser.add_argument(
+            '-e',
+            '--email',
             type=FileType('r'),
             default=False,
             help='Import from email file, or - for stdin'
         )
-        parser.add_argument('-x', '--xml',
+        parser.add_argument(
+            '-x',
+            '--xml',
             type=FileType('r'),
             default=False,
             help='Import from xml file, or - for stdin'
@@ -242,7 +245,11 @@ class Command(BaseCommand):
                 try:
                     result.save()
                 except Error as e:
-                    msg = "Unable to save the DMARC report result {} for {}: {}".format(resulttype.tag, result_domain, e.message)
+                    msg = "Unable to save the DMARC report result {} for {}: {}".format(
+                        resulttype.tag,
+                        result_domain,
+                        e.message
+                    )
                     logger.error(msg)
 
     def get_xml_from_email(self, email):
@@ -284,9 +291,9 @@ class Command(BaseCommand):
                     except (zipfile.BadZipfile):
                         msg = 'Unable to unzip mimepart'
                         logger.error(msg)
-                        tf = tempfile.mkstemp(prefix='dmarc-',suffix='.zip')
+                        tf = tempfile.mkstemp(prefix='dmarc-', suffix='.zip')
                         dmarc_zip.seek(0)
-                        tmpf = os.fdopen(tf[0],'w')
+                        tmpf = os.fdopen(tf[0], 'w')
                         tmpf.write(dmarc_zip.getvalue())
                         tmpf.close()
                         msg = 'Saved in: {}'.format(tf[1])
@@ -306,9 +313,9 @@ class Command(BaseCommand):
                     except:
                         msg = 'Unable to gunzip mimepart'
                         logger.error(msg)
-                        tf = tempfile.mkstemp(prefix='dmarc-',suffix='.gz')
+                        tf = tempfile.mkstemp(prefix='dmarc-', suffix='.gz')
                         dmarc_zip.seek(0)
-                        tmpf = os.fdopen(tf[0],'w')
+                        tmpf = os.fdopen(tf[0], 'w')
                         tmpf.write(dmarc_zip.getvalue())
                         tmpf.close()
                         msg = 'Saved in: {}'.format(tf[1])

@@ -1,8 +1,8 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 """
 DMARC tests for importing Aggregate Reports
@@ -58,20 +58,20 @@ class ImportDMARCReportTestCase(TestCase):
         """Test importing xml file"""
         out = StringIO()
         data = Reporter.objects.all()
-        self.assertEqual(len(data),0)
+        self.assertEqual(len(data), 0)
         dmarcreport = os.path.dirname(os.path.realpath(__file__))
         dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport.xml')
         call_command('importdmarcreport', dmarcreport, stdout=out)
         self.assertIn('', out.getvalue())
         # Reporter object
         data = Reporter.objects.all()
-        self.assertEqual(len(data),1)
-        self.assertEqual(data[0].org_name , 'Persistent Objects')
-        self.assertEqual(data[0].email , 'ahicks@p-o.co.uk')
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0].org_name, 'Persistent Objects')
+        self.assertEqual(data[0].email, 'ahicks@p-o.co.uk')
         # Report object
         data = Report.objects.all()
-        self.assertEqual(len(data),1)
-        self.assertEqual(data[0].report_id , '5edbe461-ccda-1e41-abdb-00c0af3f9715@p-o.co.uk')
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0].report_id, '5edbe461-ccda-1e41-abdb-00c0af3f9715@p-o.co.uk')
         if settings.USE_TZ:
             tz_utc = pytz.timezone(settings.TIME_ZONE)
             self.assertEqual(data[0].date_begin, datetime(2015, 2, 25, 12, 0, tzinfo=tz_utc))
@@ -89,7 +89,7 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertIn(u"<feedback>", data[0].report_xml)
         # Record
         data = Record.objects.all()
-        self.assertEqual(len(data),1)
+        self.assertEqual(len(data), 1)
         self.assertEqual(data[0].source_ip, '80.229.143.200')
         self.assertEqual(data[0].recordcount, 1)
         self.assertEqual(data[0].policyevaluated_disposition, 'none')
@@ -101,7 +101,7 @@ class ImportDMARCReportTestCase(TestCase):
 
         # Result
         data = Result.objects.all()
-        self.assertEqual(len(data),2)
+        self.assertEqual(len(data), 2)
         self.assertEqual(data[0].record_type, 'spf')
         self.assertEqual(data[0].domain, 'p-o.co.uk')
         self.assertEqual(data[0].result, 'pass')

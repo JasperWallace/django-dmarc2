@@ -1,8 +1,8 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 """
 DMARC models for managing Aggregate Reports
@@ -20,6 +20,7 @@ class Reporter(models.Model):
 
     def __unicode__(self):
         return self.org_name
+
 
 class Report(models.Model):
     report_id = models.CharField(max_length=100)
@@ -40,6 +41,7 @@ class Report(models.Model):
     class Meta:
         unique_together = (("reporter", "report_id", "date_begin"),)
 
+
 class Record(models.Model):
     report = models.ForeignKey(Report, related_name='records')
     source_ip = models.CharField(max_length=39)
@@ -54,6 +56,7 @@ class Record(models.Model):
     def __unicode__(self):
         return self.source_ip
 
+
 class Result(models.Model):
     record = models.ForeignKey(Record, related_name='results')
     record_type = models.CharField(max_length=4)
@@ -62,6 +65,7 @@ class Result(models.Model):
 
     def __unicode__(self):
         return "%s:%s-%s" % (str(self.id), self.record_type, self.domain,)
+
 
 class FBReporter(models.Model):
     org_name = models.CharField('Organisation', unique=True, max_length=100)
@@ -74,6 +78,7 @@ class FBReporter(models.Model):
         if not self.org_name:
             self.org_name = self.email
         super(FBReporter, self).save(*args, **kwargs)
+
 
 class FBReport(models.Model):
     reporter = models.ForeignKey(FBReporter)
@@ -91,6 +96,11 @@ class FBReport(models.Model):
     feedback_source = models.TextField()
 
     def __unicode__(self):
-        msg = '{} {} {} {} {}'.format(self.data, self.domain, self.source_ip,
-                self.email_from, self.email_subject)
+        msg = '{} {} {} {} {}'.format(
+            self.data,
+            self.domain,
+            self.source_ip,
+            self.email_from,
+            self.email_subject
+        )
         return msg
