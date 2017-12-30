@@ -270,11 +270,13 @@ class Command(BaseCommand):
         for mimepart in dmarcemail.walk():
             msg = 'Processing content type: {}'.format(mimepart.get_content_type())
             logger.debug(msg)
-            if mimepart.get_content_type() == 'application/x-zip-compressed' \
-                or mimepart.get_content_type() == 'application/x-zip' \
-                or mimepart.get_content_type() == 'application/zip' \
-                or mimepart.get_content_type() == 'application/gzip' \
-                or mimepart.get_content_type() == 'application/octet-stream':
+            if mimepart.get_content_type() in (
+                    'application/x-zip-compressed',
+                    'application/x-zip',
+                    'application/zip',
+                    'application/gzip',
+                    'application/octet-stream'
+            ):
                 dmarc_zip = StringIO()
                 dmarc_zip.write(mimepart.get_payload(decode=True))
                 dmarc_zip.seek(0)
