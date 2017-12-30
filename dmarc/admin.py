@@ -13,6 +13,7 @@ from django.contrib import admin
 
 from dmarc.models import Report
 
+
 class ReportAdmin(admin.ModelAdmin):
     actions = []
     model = Report

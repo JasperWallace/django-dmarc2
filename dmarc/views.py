@@ -13,12 +13,13 @@ import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core import serializers
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import connection
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
 
 from dmarc.models import Report
+
 
 class Echo(object):
     """An object that implements just the write method of the file-like
@@ -195,4 +196,3 @@ def dmarc_json(request):
 
     data = response = JsonResponse(cursor.fetchall(), safe=False)
     return data
-

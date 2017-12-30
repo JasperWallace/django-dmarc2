@@ -8,6 +8,7 @@ DMARC urls
 http://dmarc.org/resources/specification/
 """
 from django.conf.urls import url
+
 from dmarc import views
 
 app_name = 'dmarc'

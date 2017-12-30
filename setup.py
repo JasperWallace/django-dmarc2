@@ -1,8 +1,9 @@
 """Managing DMARC aggregate and feedback reports
 """
-from setuptools import setup
 from codecs import open
 from os import path
+
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 

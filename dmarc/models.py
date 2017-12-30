@@ -10,7 +10,9 @@ http://dmarc.org/resources/specification/
 """
 
 from datetime import datetime
+
 from django.db import models
+
 
 class Reporter(models.Model):
     org_name = models.CharField('Organisation', unique=True, max_length=100)
@@ -92,5 +94,3 @@ class FBReport(models.Model):
         msg = '{} {} {} {} {}'.format(self.data, self.domain, self.source_ip,
                 self.email_from, self.email_subject)
         return msg
-
-

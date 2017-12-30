@@ -7,28 +7,29 @@
 """
 from __future__ import unicode_literals
 
-import os, sys
-import pytz
-import xml.etree.ElementTree as ET
 import gzip
-import zipfile
 import logging
+import os
+import sys
 import tempfile
-
+import xml.etree.ElementTree as ET
+import zipfile
+from argparse import FileType
+from cStringIO import StringIO
 from datetime import datetime
 from email import message_from_file, message_from_string
 from stat import S_ISREG
-from cStringIO import StringIO
 from time import timezone
-from argparse import FileType
 
-from django.db.utils import IntegrityError
-from django.db import Error
+import pytz
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
+from django.db import Error
+from django.db.utils import IntegrityError
 
-from dmarc.models import Reporter, Report, Record, Result
+from dmarc.models import Record, Report, Reporter, Result
+
 
 class Command(BaseCommand):
     """
@@ -321,4 +322,3 @@ class Command(BaseCommand):
                 msg = "DMARC Report is not in mimepart: {}".format(myname)
                 logger.debug(msg)
         return dmarc_xml
-
