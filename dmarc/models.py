@@ -15,6 +15,8 @@ from django.db import models
 
 
 class Reporter(models.Model):
+    """DMARC reporter"""
+
     org_name = models.CharField('Organisation', unique=True, max_length=100)
     email = models.EmailField()
 
@@ -23,6 +25,8 @@ class Reporter(models.Model):
 
 
 class Report(models.Model):
+    """DMARC report metadata"""
+
     report_id = models.CharField(max_length=100)
     reporter = models.ForeignKey(Reporter)
     date_begin = models.DateTimeField(db_index=True)
@@ -38,11 +42,15 @@ class Report(models.Model):
     def __unicode__(self):
         return self.report_id
 
-    class Meta:
+    class Meta(object):
+        """Model constraints"""
+
         unique_together = (("reporter", "report_id", "date_begin"),)
 
 
 class Record(models.Model):
+    """DMARC report record"""
+
     report = models.ForeignKey(Report, related_name='records')
     source_ip = models.CharField(max_length=39)
     recordcount = models.IntegerField()
@@ -58,6 +66,8 @@ class Record(models.Model):
 
 
 class Result(models.Model):
+    """DMARC report record result"""
+
     record = models.ForeignKey(Record, related_name='results')
     record_type = models.CharField(max_length=4)
     domain = models.CharField(max_length=100)
@@ -68,6 +78,8 @@ class Result(models.Model):
 
 
 class FBReporter(models.Model):
+    """DMARC feedback reporter"""
+
     org_name = models.CharField('Organisation', unique=True, max_length=100)
     email = models.EmailField()
 
@@ -81,6 +93,8 @@ class FBReporter(models.Model):
 
 
 class FBReport(models.Model):
+    """DMARC feedback report"""
+
     reporter = models.ForeignKey(FBReporter)
     date = models.DateTimeField(db_index=True)
     source_ip = models.CharField(max_length=39)

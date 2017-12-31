@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Django project management script"""
 import os
 import sys
 

@@ -3,12 +3,14 @@
 #
 # License: BSD
 # ----------------------------------------------------------------------
-
+"""Django application configuration"""
 from __future__ import unicode_literals
 
 from django.apps import AppConfig
 
 
 class DmarcConfig(AppConfig):
+    """DMARC application configuration"""
+
     name = 'dmarc'
     verbose_name = "DMARC feedback report manager"

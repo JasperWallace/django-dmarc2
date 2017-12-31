@@ -3,18 +3,18 @@
 #
 # License: BSD
 # ----------------------------------------------------------------------
-
 """
 DMARC models for managing Aggregate Reports
 http://dmarc.org/resources/specification/
 """
-
 from django.contrib import admin
 
 from dmarc.models import Report
 
 
 class ReportAdmin(admin.ModelAdmin):
+    """Report display options"""
+
     actions = []
     model = Report
     list_display = ['report_id', 'reporter', 'date_begin']

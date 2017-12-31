@@ -131,7 +131,7 @@ AND dkim_dmarc_result.record_type = 'dkim'
 
 @staff_member_required
 def dmarc_index(request):
-
+    """Index view"""
     context = {
         "reports": 'TODO',
     }
@@ -140,6 +140,7 @@ def dmarc_index(request):
 
 @staff_member_required
 def dmarc_report(request):
+    """Paginated DMARC report list"""
     report_list = Report.objects.select_related(
         'reporter',
     ).prefetch_related(
@@ -165,7 +166,7 @@ def dmarc_report(request):
 
 @staff_member_required
 def dmarc_csv(request):
-    """Export dmarc data as a csv"""
+    """Export DMARC data as CSV"""
     # Inspired by https://code.djangoproject.com/ticket/21179
     def stream():
         """Generator function to yield cursor rows."""
@@ -195,8 +196,7 @@ def dmarc_csv(request):
 
 @staff_member_required
 def dmarc_json(request):
-    """Export dmarc data as json"""
-
+    """Export DMARC data as JSON"""
     cursor = _sql_cursor(request.GET)
 
     data = response = JsonResponse(cursor.fetchall(), safe=False)
