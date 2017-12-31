@@ -69,7 +69,8 @@ class Command(BaseCommand):
         else:
             self.process_822(dmarcemail)
 
-    def process_multipart(self, dmarcemail):
+    @staticmethod
+    def process_multipart(dmarcemail):
         """Extract multipart report"""
         report = FBReport()
         dmarc_reporter = None
@@ -222,7 +223,8 @@ class Command(BaseCommand):
             msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
 
-    def process_822(self, dmarcemail):
+    @staticmethod
+    def process_822(dmarcemail):
         """Extract report from rfc822 email, non standard"""
         report = FBReport()
         dmarc_reporter = None

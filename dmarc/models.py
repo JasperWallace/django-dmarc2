@@ -40,6 +40,7 @@ class Report(models.Model):
 
     class Meta(object):
         """Model constraints"""
+        # pylint: disable=too-few-public-methods
 
         unique_together = (("reporter", "report_id", "date_begin"),)
 
@@ -83,6 +84,7 @@ class FBReporter(models.Model):
         return self.email
 
     def save(self, *args, **kwargs):
+        # pylint: disable=arguments-differ
         if not self.org_name:
             self.org_name = self.email
         super(FBReporter, self).save(*args, **kwargs)

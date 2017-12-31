@@ -248,9 +248,9 @@ class Command(BaseCommand):
                     )
                     logger.error(msg)
 
-    def get_xml_from_email(self, email):
-        """Get xml from an email
-        """
+    @staticmethod
+    def get_xml_from_email(email):
+        """Get xml from an email"""
         dmarc_xml = ''
         logger = logging.getLogger(__name__)
 
