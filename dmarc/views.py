@@ -197,5 +197,5 @@ def dmarc_json(request):
     """Export DMARC data as JSON"""
     cursor = _sql_cursor(request.GET)
 
-    data = response = JsonResponse(cursor.fetchall(), safe=False)
+    data = JsonResponse(cursor.fetchall(), safe=False)
     return data

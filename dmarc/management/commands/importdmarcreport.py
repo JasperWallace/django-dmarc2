@@ -286,7 +286,7 @@ class Command(BaseCommand):
                         for f in files:
                             dmarc_xml = ZipFile.read(f)
                         ZipFile.close()
-                    except (zipfile.BadZipfile):
+                    except zipfile.BadZipfile:
                         msg = 'Unable to unzip mimepart'
                         logger.error(msg)
                         tf = tempfile.mkstemp(prefix='dmarc-', suffix='.zip')

@@ -74,7 +74,7 @@ class Command(BaseCommand):
         report = FBReport()
         dmarc_reporter = None
         try:
-            dmarc_source = dmarcemail.get_payload()
+            dmarcemail.get_payload()
             dmarc_reporter = dmarcemail.get('from')
             report.reporter = FBReporter.objects.get(email=dmarc_reporter)
             mimepart = dmarcemail.get_payload()
