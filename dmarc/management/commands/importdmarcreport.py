@@ -81,7 +81,7 @@ class Command(BaseCommand):
         except:
             msg = "Processing xml failed: {}".format(dmarc_xml)
             logger.error(msg)
-            return None
+            return
 
         # Report metadata
         report_metadata = root.findall('report_metadata')
@@ -164,7 +164,7 @@ class Command(BaseCommand):
         except IntegrityError as err:
             msg = "DMARC duplicate report record: {}".format(err)
             logger.error(msg)
-            return None
+            return
         except Error as err:
             msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
             logger.error(msg)
