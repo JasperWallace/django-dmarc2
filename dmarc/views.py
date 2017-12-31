@@ -47,8 +47,7 @@ def _sql_cursor(request_args):
             val = datetime.datetime.strptime(val, '%Y-%m-%d')
         except:
             val = datetime.date.today()
-        td = datetime.timedelta(days=1)
-        val = val + td
+        val += datetime.timedelta(days=1)
         sql_where.append('dmarc_report.date_end < %s')
         sql_params.append(val)
     if 'dmarc_disposition' in request_args and request_args['dmarc_disposition']:
@@ -56,20 +55,20 @@ def _sql_cursor(request_args):
         sql_where.append('dmarc_record.policyevaluated_disposition = %s')
         sql_params.append(val)
     if 'dmarc_onlyerror' in request_args:
-        s = '('
-        s = s + "dmarc_record.policyevaluated_dkim = 'fail'"
-        s = s + " OR "
-        s = s + "dmarc_record.policyevaluated_spf = 'fail'"
-        s = s + ')'
-        sql_where.append(s)
+        clause = '('
+        clause += "dmarc_record.policyevaluated_dkim = 'fail'"
+        clause += " OR "
+        clause += "dmarc_record.policyevaluated_spf = 'fail'"
+        clause += ')'
+        sql_where.append(clause)
     if 'dmarc_filter' in request_args and request_args['dmarc_filter']:
         val = request_args['dmarc_filter'] + '%'
-        s = '('
-        s = s + "lower(dmarc_reporter.org_name) LIKE lower(%s)"
-        s = s + " OR "
-        s = s + "dmarc_record.source_ip LIKE %s"
-        s = s + ')'
-        sql_where.append(s)
+        clause = '('
+        clause += "lower(dmarc_reporter.org_name) LIKE lower(%s)"
+        clause += " OR "
+        clause += "dmarc_record.source_ip LIKE %s"
+        clause += ')'
+        sql_where.append(clause)
         sql_params.append(val)
         sql_params.append(val)
 
@@ -181,13 +180,13 @@ def dmarc_csv(request):
             data = data + writer.writerow(row)
             yield data
 
-    dt = datetime.datetime.now()
-    cd = 'attachment; filename="dmarc-{}.csv"'.format(dt.strftime('%Y-%m-%d-%H%M%S'))
+    now = datetime.datetime.now()
+    disposition = 'attachment; filename="dmarc-{}.csv"'.format(now.strftime('%Y-%m-%d-%H%M%S'))
 
     cursor = _sql_cursor(request.GET)
 
     response = StreamingHttpResponse(stream(), content_type="text/csv")
-    response['Content-Disposition'] = cd
+    response['Content-Disposition'] = disposition
 
     return response
 

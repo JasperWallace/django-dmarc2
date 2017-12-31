@@ -91,19 +91,19 @@ class Command(BaseCommand):
         except:
             msg = 'Unable to get rfc822 report'
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(tf[0], 'w')
+            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(temp[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
-            msg = 'Saved as: {}'.format(tf[1])
+            msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
             raise CommandError(msg)
-        fp = StringIO()
-        g = Generator(fp, maxheaderlen=0)
-        g.flatten(dmarcemail)
-        report.feedback_source = fp.getvalue()
-        g = None
-        fp = None
+        out = StringIO()
+        gen = Generator(out, maxheaderlen=0)
+        gen.flatten(dmarcemail)
+        report.feedback_source = out.getvalue()
+        gen = None
+        out = None
 
         # Get the human readable part
         try:
@@ -119,12 +119,12 @@ class Command(BaseCommand):
         try:
             mimepart = dmarcemail.get_payload(1)
             if mimepart.get_content_type() == 'message/feedback-report':
-                fp = StringIO()
-                g = Generator(fp, maxheaderlen=0)
-                g.flatten(mimepart)
-                report.feedback_report = fp.getvalue()
-                g = None
-                fp = None
+                out = StringIO()
+                gen = Generator(out, maxheaderlen=0)
+                gen.flatten(mimepart)
+                report.feedback_report = out.getvalue()
+                gen = None
+                out = None
             else:
                 msg = 'Found {} instead of message/feedback-report'.format(mimepart.get_content_type())
                 logger.error(msg)
@@ -152,10 +152,10 @@ class Command(BaseCommand):
                         if ls0 == 'Arrival-Date':
                             try:
                                 # get tuples
-                                t = parsedate_tz(ls2)
+                                tuples = parsedate_tz(ls2)
                                 # get timestamp
-                                t = mktime_tz(t)
-                                report.date = datetime.fromtimestamp(t)
+                                time = mktime_tz(tuples)
+                                report.date = datetime.fromtimestamp(time)
                                 tz_utc = pytz.timezone('UTC')
                                 report.date = report.date.replace(tzinfo=tz_utc)
                             except:
@@ -166,38 +166,39 @@ class Command(BaseCommand):
                         if ls0 == 'Delivery-Result':
                             report.dmarc_result = ls2
                     if ls0 == 'Authentication-Results':
-                        ar = ls2.split()
-                        for r in ar:
-                            (r0, r1, r2) = r.partition('=')
-                            if r1:
-                                if not report.dkim_alignment and r0 == 'dkim':
-                                    report.dkim_alignment = r2.rstrip(';')
-                                if not report.spf_alignment and r0 == 'spf':
-                                    report.spf_alignment = r2.rstrip(';')
+                        auth_results = ls2.split()
+                        for result in auth_results:
+                            (typ, eq_sign, alignment) = result.partition('=')
+                            if not eq_sign:
+                                continue
+                            if not report.dkim_alignment and typ == 'dkim':
+                                report.dkim_alignment = alignment.rstrip(';')
+                            if not report.spf_alignment and typ == 'spf':
+                                report.spf_alignment = alignment.rstrip(';')
 
         # Get the rfc822 headers and any message
-        fp = StringIO()
-        g = Generator(fp, maxheaderlen=0)
+        out = StringIO()
+        gen = Generator(out, maxheaderlen=0)
         try:
             mimepart = dmarcemail.get_payload(2, False)
             mimepart_type = mimepart.get_content_type()
-            g.flatten(mimepart)
+            gen.flatten(mimepart)
             if mimepart_type == 'message/rfc822':
-                report.email_source = fp.getvalue()
+                report.email_source = out.getvalue()
             elif mimepart_type == 'message/rfc822-headers':
-                report.email_source = fp.getvalue()
+                report.email_source = out.getvalue()
             elif mimepart_type == 'text/rfc822':
-                report.email_source = fp.getvalue()
+                report.email_source = out.getvalue()
             elif mimepart_type == 'text/rfc822-headers':
-                report.email_source = fp.getvalue()
+                report.email_source = out.getvalue()
             else:
                 msg = 'Found {} instead of rfc822'.format(mimepart_type)
                 logger.debug(msg)
         except:
             msg = 'Unable to get rfc822 part'
             logger.warning(msg)
-        g = None
-        fp = None
+        gen = None
+        out = None
         if report.email_source:
             for line in report.email_source.splitlines():
                 line = line.lstrip()
@@ -214,11 +215,11 @@ class Command(BaseCommand):
         except:
             msg = 'Failed save from {}'.format(report.reporter)
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(tf[0], 'w')
+            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(temp[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
-            msg = 'Saved as: {}'.format(tf[1])
+            msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
 
     def process_822(self, dmarcemail):
@@ -241,20 +242,20 @@ class Command(BaseCommand):
         except:
             msg = 'Unable to get feedback report'
             logger.warning(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(tf[0], 'w')
+            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(temp[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
-            msg = 'Saved as: {}'.format(tf[1])
+            msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
             raise CommandError(msg)
         report.feedback_source = dmarcemail.get_payload()
-        fp = StringIO()
-        g = Generator(fp, maxheaderlen=0)
-        g.flatten(dmarcemail)
-        report.email_source = fp.getvalue()
-        g = None
-        fp = None
+        out = StringIO()
+        gen = Generator(out, maxheaderlen=0)
+        gen.flatten(dmarcemail)
+        report.email_source = out.getvalue()
+        gen = None
+        out = None
 
         print report.feedback_source
         for line in report.feedback_source.splitlines():
@@ -273,10 +274,10 @@ class Command(BaseCommand):
                     if ls0 == 'Received Date':
                         try:
                             # get tuples
-                            t = parsedate_tz(ls2)
+                            tuples = parsedate_tz(ls2)
                             # get timestamp
-                            t = mktime_tz(t)
-                            report.date = datetime.fromtimestamp(t)
+                            time = mktime_tz(tuples)
+                            report.date = datetime.fromtimestamp(time)
                             tz_utc = pytz.timezone('UTC')
                             report.date = report.date.replace(tzinfo=tz_utc)
                         except:
@@ -303,9 +304,9 @@ class Command(BaseCommand):
         except:
             msg = 'Failed save from {}'.format(dmarc_reporter)
             logger.error(msg)
-            tf = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(tf[0], 'w')
+            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
+            tmpf = os.fdopen(temp[0], 'w')
             tmpf.write(dmarcemail.get_payload())
             tmpf.close()
-            msg = 'Saved as: {}'.format(tf[1])
+            msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)

@@ -3,7 +3,6 @@
 #
 # License: BSD
 # ----------------------------------------------------------------------
-
 """
 DMARC tests for importing Aggregate Reports
 http://dmarc.org/resources/specification/
@@ -30,8 +29,8 @@ class ImportDMARCReportTestCase(TestCase):
         """Set up test environment"""
         pass
 
-    def test_importdmarcreport_withoutargs(self):
-        """Test importing withuot args"""
+    def test_import_noargs(self):
+        """Test importing without args"""
         msg = 'Check usage, please supply a single DMARC report file or - for email on stdin'
         out = StringIO()
         try:
@@ -40,7 +39,7 @@ class ImportDMARCReportTestCase(TestCase):
             msgerror = str(cmderror)
         self.assertIn(msg, msgerror)
 
-    def test_importdmarcreport_filenotfound(self):
+    def test_import_filenotfound(self):
         """Test importing xml file not found"""
         msg = 'Unable to find DMARC file: filenotfound.xml'
         out = StringIO()

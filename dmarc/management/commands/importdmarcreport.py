@@ -112,8 +112,8 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             try:
                 reporter = Reporter.objects.create(org_name=org_name, email=email)
-            except Error as e:
-                msg = "Unable to create DMARC report for {}: {}".format(org_name, e)
+            except Error as err:
+                msg = "Unable to create DMARC report for {}: {}".format(org_name, err)
                 logger.error(msg)
 
         # Reporting policy
@@ -161,12 +161,12 @@ class Command(BaseCommand):
         report.report_xml = dmarc_xml
         try:
             report.save()
-        except IntegrityError as e:
-            msg = "DMARC duplicate report record: {}".format(e)
+        except IntegrityError as err:
+            msg = "DMARC duplicate report record: {}".format(err)
             logger.error(msg)
             return None
-        except Error as e:
-            msg = "Unable to save the DMARC report header {}: {}".format(report_id, e)
+        except Error as err:
+            msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
             logger.error(msg)
 
         # Record
@@ -217,11 +217,11 @@ class Command(BaseCommand):
             record.identifier_headerfrom = identifier_headerfrom
             try:
                 record.save()
-            except IntegrityError as e:
-                msg = "DMARC duplicate record: {}".format(e)
+            except IntegrityError as err:
+                msg = "DMARC duplicate record: {}".format(err)
                 logger.error(msg)
-            except Error as e:
-                msg = "Unable to save the DMARC report record: {}".format(e)
+            except Error as err:
+                msg = "Unable to save the DMARC report record: {}".format(err)
                 logger.error(msg)
 
             auth_results = node.find('auth_results')
@@ -240,11 +240,11 @@ class Command(BaseCommand):
                 result.result = result_result
                 try:
                     result.save()
-                except Error as e:
+                except Error as err:
                     msg = "Unable to save the DMARC report result {} for {}: {}".format(
                         resulttype.tag,
                         result_domain,
-                        e.message
+                        err.message
                     )
                     logger.error(msg)
 
@@ -280,21 +280,21 @@ class Command(BaseCommand):
                     msg = "DMARC is zipfile"
                     logger.debug(msg)
                     try:
-                        ZipFile = zipfile.ZipFile(dmarc_zip, 'r')
-                        files = ZipFile.infolist()
+                        archive = zipfile.ZipFile(dmarc_zip, 'r')
+                        files = archive.infolist()
                         # The DMARC report should only contain a single xml file
-                        for f in files:
-                            dmarc_xml = ZipFile.read(f)
-                        ZipFile.close()
+                        for file_ in files:
+                            dmarc_xml = archive.read(file_)
+                        archive.close()
                     except zipfile.BadZipfile:
                         msg = 'Unable to unzip mimepart'
                         logger.error(msg)
-                        tf = tempfile.mkstemp(prefix='dmarc-', suffix='.zip')
+                        temp = tempfile.mkstemp(prefix='dmarc-', suffix='.zip')
                         dmarc_zip.seek(0)
-                        tmpf = os.fdopen(tf[0], 'w')
+                        tmpf = os.fdopen(temp[0], 'w')
                         tmpf.write(dmarc_zip.getvalue())
                         tmpf.close()
-                        msg = 'Saved in: {}'.format(tf[1])
+                        msg = 'Saved in: {}'.format(temp[1])
                         logger.debug(msg)
                         raise CommandError(msg)
                 else:
@@ -303,20 +303,20 @@ class Command(BaseCommand):
                     # Reset zip file
                     dmarc_zip.seek(0)
                     try:
-                        ZipFile = gzip.GzipFile(None, 'rb', 0, dmarc_zip)
-                        dmarc_xml = ZipFile.read()
-                        ZipFile = None
+                        archive = gzip.GzipFile(None, 'rb', 0, dmarc_zip)
+                        dmarc_xml = archive.read()
+                        archive = None
                         msg = "DMARC successfully extracted xml from gzip"
                         logger.debug(msg)
                     except:
                         msg = 'Unable to gunzip mimepart'
                         logger.error(msg)
-                        tf = tempfile.mkstemp(prefix='dmarc-', suffix='.gz')
+                        temp = tempfile.mkstemp(prefix='dmarc-', suffix='.gz')
                         dmarc_zip.seek(0)
-                        tmpf = os.fdopen(tf[0], 'w')
+                        tmpf = os.fdopen(temp[0], 'w')
                         tmpf.write(dmarc_zip.getvalue())
                         tmpf.close()
-                        msg = 'Saved in: {}'.format(tf[1])
+                        msg = 'Saved in: {}'.format(temp[1])
                         logger.debug(msg)
                         raise CommandError(msg)
             else:
