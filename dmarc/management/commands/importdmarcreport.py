@@ -9,19 +9,15 @@ from __future__ import unicode_literals
 import gzip
 import logging
 import os
-import sys
 import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 from argparse import FileType
 from cStringIO import StringIO
 from datetime import datetime
-from email import message_from_file, message_from_string
-from stat import S_ISREG
-from time import timezone
+from email import message_from_string
 
 import pytz
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import Error

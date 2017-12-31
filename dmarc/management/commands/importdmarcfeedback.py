@@ -8,23 +8,17 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import sys
 import tempfile
 from argparse import FileType
 from cStringIO import StringIO
 from datetime import datetime
-from email import message_from_file, message_from_string
+from email import message_from_string
 from email.generator import Generator
 from email.utils import mktime_tz, parsedate_tz
-from stat import S_ISREG
-from time import timezone
 
 import pytz
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-from django.db import Error
-from django.db.utils import IntegrityError
 
 from dmarc.models import FBReport, FBReporter
 

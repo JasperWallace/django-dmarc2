@@ -9,10 +9,8 @@ http://dmarc.org/resources/specification/
 """
 import csv
 import datetime
-import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core import serializers
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import connection
 from django.http import JsonResponse, StreamingHttpResponse

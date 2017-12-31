@@ -3,14 +3,10 @@
 #
 # License: BSD
 # ----------------------------------------------------------------------
-
 """
 DMARC models for managing Aggregate Reports
 http://dmarc.org/resources/specification/
 """
-
-from datetime import datetime
-
 from django.db import models
 
 
