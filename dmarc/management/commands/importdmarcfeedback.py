@@ -72,6 +72,8 @@ class Command(BaseCommand):
     @staticmethod
     def process_multipart(dmarcemail):
         """Extract multipart report"""
+        # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+        # pylint: disable=too-many-nested-blocks
         report = FBReport()
         dmarc_reporter = None
         try:
@@ -226,6 +228,7 @@ class Command(BaseCommand):
     @staticmethod
     def process_822(dmarcemail):
         """Extract report from rfc822 email, non standard"""
+        # pylint: disable=too-many-branches,too-many-statements
         report = FBReport()
         dmarc_reporter = None
         try:

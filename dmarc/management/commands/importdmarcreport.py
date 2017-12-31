@@ -56,7 +56,7 @@ class Command(BaseCommand):
         - the email message and the DMARC XML data will be extracted;
         - or the xml file.
         """
-
+        # pylint: disable=too-many-branches,too-many-locals,too-many-statements
         logger = logging.getLogger(__name__)
         logger.info("Importing DMARC Aggregate Reports")
 
@@ -200,7 +200,7 @@ class Command(BaseCommand):
             identifiers = node.find('identifiers')
             identifier_headerfrom = identifiers.find('header_from').text
 
-            if len(source_ip) == 0:
+            if not source_ip:
                 msg = "DMARC report record useless without a source ip"
                 logger.error(msg)
 
@@ -251,6 +251,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_xml_from_email(email):
         """Get xml from an email"""
+        # pylint: disable=too-many-statements
         dmarc_xml = ''
         logger = logging.getLogger(__name__)
 

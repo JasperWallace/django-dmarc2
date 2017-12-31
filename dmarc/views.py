@@ -33,6 +33,7 @@ class Echo(object):
 
 def _sql_cursor(request_args):
     """Returns a cursor according to users request"""
+    # pylint: disable=too-many-statements
     sql_where = []
     sql_orderby = []
     sql_params = []
