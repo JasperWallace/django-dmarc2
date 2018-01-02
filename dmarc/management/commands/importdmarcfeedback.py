@@ -228,7 +228,7 @@ class Command(BaseCommand):
     @staticmethod
     def process_822(dmarcemail):
         """Extract report from rfc822 email, non standard"""
-        # pylint: disable=too-many-branches,too-many-statements
+        # pylint: disable=too-many-branches,too-many-locals,too-many-statements
         report = FBReport()
         dmarc_reporter = None
         try:
@@ -261,8 +261,8 @@ class Command(BaseCommand):
         report.email_source = out.getvalue()
         gen = None
         out = None
+        logger.info("Feedback report source: %s", report.feedback_source)
 
-        print report.feedback_source
         for line in report.feedback_source.splitlines():
             line = line.lstrip()
             (ls0, ls1, ls2) = line.partition(':')

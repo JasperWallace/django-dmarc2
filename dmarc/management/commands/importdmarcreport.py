@@ -13,7 +13,6 @@ import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 from argparse import FileType
-from cStringIO import StringIO
 from datetime import datetime
 from email import message_from_string
 
@@ -22,6 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import Error
 from django.db.utils import IntegrityError
+from six.moves import cStringIO as StringIO
 
 from dmarc.models import Record, Report, Reporter, Result
 
