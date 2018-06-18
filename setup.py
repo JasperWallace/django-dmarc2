@@ -23,7 +23,7 @@ setup(
     author='Alan Hicks',
     author_email='ahicks@p-o.co.uk',
     install_requires=[
-        'django>=1.8,<2.0',
+        'django>=1.8',
         'pytz',
         'six>=1.10,<2.0',
     ],
