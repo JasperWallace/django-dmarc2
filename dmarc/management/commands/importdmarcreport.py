@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import Error
 from django.db.utils import IntegrityError
-from six.moves import cStringIO as StringIO
+from six import BytesIO
 
 from dmarc.models import Record, Report, Reporter, Result
 
@@ -274,7 +274,7 @@ class Command(BaseCommand):
                     'application/gzip',
                     'application/octet-stream'
             ):
-                dmarc_zip = StringIO()
+                dmarc_zip = BytesIO()
                 dmarc_zip.write(mimepart.get_payload(decode=True))
                 dmarc_zip.seek(0)
                 if zipfile.is_zipfile(dmarc_zip):
