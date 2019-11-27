@@ -1,11 +1,11 @@
 # ----------------------------------------------------------------------
-# Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
+# Copyright (c) 2015-2019, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
 # ----------------------------------------------------------------------
 """
 DMARC tests for importing Aggregate Reports
-http://dmarc.org/resources/specification/
+https://dmarc.org/resources/specification/
 """
 import os
 from datetime import datetime

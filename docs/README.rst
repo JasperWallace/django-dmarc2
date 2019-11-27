@@ -2,6 +2,8 @@
 Documentation
 =============
 
+**django-dmarc2 0.5.2 for Django 2 and Python 3**
+
 **Managing DMARC aggregate and feedback reports**
 
 Designed to quickly and easily manage DMARC aggregate and feedback reports.
@@ -140,27 +142,27 @@ DMARC reporting
 
 Aggregated feedback reports are available from the Admin page at admin/dmarc.
 
-.. image:: images/dmarc-index.png
+.. image:: ./docs/images/dmarc-index.png
    :alt: Django Administration showing this DMARC application
 
 From the DMARC dashboard at 'Site administration/DMARC' where the intention is
 to highlight a summary of recent reports, there is one report 'DMARC feedback
 reports' and is available to any user with staff members authorization.
 
-.. image:: images/dmarc-dashboard.png
+.. image:: ./docs/images/dmarc-dashboard.png
    :alt: DMARC dashboard
 
 This is an example report, it can also be downloaded as a csv file suitable
 for importing into your favourite spreadsheet.
 
-.. image:: images/dmarc-report.png
+.. image:: ./docs/images/dmarc-report.png
    :alt: Example DMARC aggregate feedback report
 
 The report can be filtered by clicking on the filter and changing any of the
 reporting period, only showing errors/failures, disposition (quarantine,
 rejection or any) and by source ip address/reporting organisation.
 
-.. image:: images/dmarc-reportfilter.png
+.. image:: ./docs/images/dmarc-reportfilter.png
    :alt: Example DMARC aggregate feedback report
 
 These reports can help ease any DMARC implementation.

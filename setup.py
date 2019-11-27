@@ -1,36 +1,34 @@
 """Managing DMARC aggregate and feedback reports"""
-import codecs
-
 from setuptools import setup
+from codecs import open
+from os import path
 
 
-def get_long_description():
-    """Reads the main README.rst to get the program's long description"""
-    with codecs.open('README.rst', encoding='utf-8') as f_readme:
-        return f_readme.read()
+here = path.abspath(path.dirname(__file__))
+# Get the long description from the README file
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
 
 
 setup(
-    name='django-dmarc',
-    version='0.5.1',
+    name='django-dmarc2',
+    version='0.5.2',
     packages=['dmarc'],
     include_package_data=True,
     license='BSD',
     description='Managing DMARC aggregate and feedback reports',
-    long_description=get_long_description(),
+    long_description=long_description,
     url='http://p-o.co.uk/tech-articles/django-dmarc/',
     download_url='https://pypi.python.org/pypi/django-dmarc',
     author='Alan Hicks',
     author_email='ahicks@p-o.co.uk',
-    install_requires=[
-        'django>=1.8',
-        'pytz',
-        'six>=1.10,<2.0',
-    ],
+    requires=['django'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',

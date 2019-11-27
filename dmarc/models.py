@@ -1,11 +1,11 @@
 # ----------------------------------------------------------------------
-# Copyright (c) 2015-2017, Persistent Objects Ltd http://p-o.co.uk/
+# Copyright (c) 2015-2019, Persistent Objects Ltd http://p-o.co.uk/
 #
 # License: BSD
 # ----------------------------------------------------------------------
 """
 DMARC models for managing Aggregate Reports
-http://dmarc.org/resources/specification/
+https://dmarc.org/resources/specification/
 """
 from django.db import models
 
@@ -71,7 +71,7 @@ class Result(models.Model):
     result = models.CharField(max_length=9)
 
     def __unicode__(self):
-        return "%s:%s-%s" % (str(self.id), self.record_type, self.domain,)
+        return "%s:%s-%s" % (str(self.pk), self.record_type, self.domain,)
 
 
 class FBReporter(models.Model):
@@ -109,7 +109,7 @@ class FBReport(models.Model):
 
     def __unicode__(self):
         msg = '{} {} {} {} {}'.format(
-            self.data,
+            self.date,
             self.domain,
             self.source_ip,
             self.email_from,
