@@ -4,6 +4,9 @@ Documentation
 
 **django-dmarc2 0.5.2 for Django 2 and Python 3**
 
+This is a fork of `django-dmarc`_ by Alan Hicks that adds compatibility
+with Django 2 and Python 3.
+
 **Managing DMARC aggregate and feedback reports**
 
 Designed to quickly and easily manage DMARC aggregate and feedback reports.
@@ -34,7 +37,9 @@ maintenance is achieved by fully automating import of feedback and reports.
 Quick start
 ===========
 
-1. Install the app
+1. Install the app using pip::
+
+    pip install django-dmarc2
 
 2. Add "dmarc" to your INSTALLED_APPS setting::
 
@@ -70,7 +75,9 @@ you can pipe an email and it will do the right thing.
 Installation
 ============
 
-Install the app
+Install the app using pip::
+
+    pip install django-dmarc2
 
 Configuration
 -------------
@@ -202,6 +209,7 @@ Communications are expected to conform to the `Django Code of Conduct`_.
 
 .. GENERAL LINKS
 
+.. _`django-dmarc`: https://github.com/alan-hicks/django-dmarc
 .. _`Django`: http://djangoproject.com/
 .. _`Django Code of Conduct`: https://www.djangoproject.com/conduct/
 .. _`Python`: http://python.org/
@@ -209,9 +217,10 @@ Communications are expected to conform to the `Django Code of Conduct`_.
 .. _`Project website`: http://p-o.co.uk/tech-articles/django-dmarc/
 .. _`DMARC`: http://dmarc.org/
 .. _`Google gmail DMARC`: https://support.google.com/a/answer/2466580
-.. _`Download from PyPI`: https://pypi.python.org/pypi/django-dmarc
+.. _`Download from PyPI`: https://pypi.org/project/django-dmarc2
 
 .. PEOPLE WITH QUOTES
 
 .. _`Alan Hicks`: https://twitter.com/AlanHicksLondon
 .. _`ahicks@p-o.co.uk`: mailto:ahicks@p-o.co.uk?subject=django-dmarc+Security+Issue
+
