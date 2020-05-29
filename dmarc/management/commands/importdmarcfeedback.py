@@ -10,7 +10,7 @@ import logging
 import os
 import tempfile
 from argparse import FileType
-from cStringIO import StringIO
+from io import StringIO
 from datetime import datetime
 from email import message_from_string
 from email.generator import Generator
