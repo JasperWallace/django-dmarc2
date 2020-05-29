@@ -16,7 +16,7 @@ class Reporter(models.Model):
     org_name = models.CharField('Organisation', unique=True, max_length=100)
     email = models.EmailField()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.org_name
 
 
@@ -35,7 +35,7 @@ class Report(models.Model):
     policy_pct = models.SmallIntegerField('Sampling rate')
     report_xml = models.TextField(blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.report_id
 
     class Meta(object):
@@ -58,7 +58,7 @@ class Record(models.Model):
     policyevaluated_reasoncomment = models.CharField(blank=True, max_length=100)
     identifier_headerfrom = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.source_ip
 
 
@@ -70,7 +70,7 @@ class Result(models.Model):
     domain = models.CharField(max_length=100)
     result = models.CharField(max_length=9)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s-%s" % (str(self.pk), self.record_type, self.domain,)
 
 
@@ -80,7 +80,7 @@ class FBReporter(models.Model):
     org_name = models.CharField('Organisation', unique=True, max_length=100)
     email = models.EmailField()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.email
 
     def save(self, *args, **kwargs):
@@ -107,7 +107,7 @@ class FBReport(models.Model):
     feedback_report = models.TextField(blank=True)
     feedback_source = models.TextField()
 
-    def __unicode__(self):
+    def __str__(self):
         msg = '{} {} {} {} {}'.format(
             self.date,
             self.domain,
