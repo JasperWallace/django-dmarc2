@@ -79,7 +79,7 @@ class Command(BaseCommand):
         try:
             root = ET.fromstring(dmarc_xml)
         except:
-            msg = "Processing xml failed: {}".format(dmarc_xml)
+            msg = "Processing xml failed: {} // {}".format(dmarc_xml, email)
             logger.error(msg)
             return
 
@@ -163,6 +163,10 @@ class Command(BaseCommand):
             report.save()
         except IntegrityError as err:
             msg = "DMARC duplicate report record: {}".format(err)
+            logger.error(msg)
+            msg = "{} // {} // {}".format(report.reporter, report.report_id, report.date_begin)
+            logger.error(msg)
+            msg = "org: {}, email: {}".format(reporter.org_name, reporter.email)
             logger.error(msg)
             return
         except Error as err:
@@ -272,8 +276,13 @@ class Command(BaseCommand):
                     'application/x-zip',
                     'application/zip',
                     'application/gzip',
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'text/plain'
             ):
+                # zoho.com uses text/plain for zip files :/
+                if mimepart.get_content_type() == 'text/plain':
+                    if not mimepart.get_filename('').endswith('.zip'):
+                        continue
                 dmarc_zip = BytesIO()
                 dmarc_zip.write(mimepart.get_payload(decode=True))
                 dmarc_zip.seek(0)
