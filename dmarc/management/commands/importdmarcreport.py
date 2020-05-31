@@ -83,6 +83,8 @@ class Command(BaseCommand):
             logger.error(msg)
             return
 
+        orig_email = email
+
         # Report metadata
         report_metadata = root.findall('report_metadata')
         org_name = None
@@ -173,6 +175,7 @@ class Command(BaseCommand):
             msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
             logger.error(msg)
 
+        ok_records = 0
         # Record
         for node in root.findall('record'):
             source_ip = None
@@ -207,6 +210,7 @@ class Command(BaseCommand):
             if not source_ip:
                 msg = "DMARC report record useless without a source ip"
                 logger.error(msg)
+                continue
 
             # Create the record
             record = Record()
@@ -221,6 +225,7 @@ class Command(BaseCommand):
             record.identifier_headerfrom = identifier_headerfrom
             try:
                 record.save()
+                ok_records += 1
             except IntegrityError as err:
                 msg = "DMARC duplicate record: {}".format(err)
                 logger.error(msg)
@@ -244,6 +249,7 @@ class Command(BaseCommand):
                 result.result = result_result
                 try:
                     result.save()
+                    ok_records += 1
                 except Error as err:
                     msg = "Unable to save the DMARC report result {} for {}: {}".format(
                         resulttype.tag,
@@ -251,6 +257,10 @@ class Command(BaseCommand):
                         err.message
                     )
                     logger.error(msg)
+        if ok_records == 0:
+            msg = "didn't get any usable records, deleteing the report"
+            logger.error(msg)
+            report.delete()
 
     @staticmethod
     def get_xml_from_email(email):
