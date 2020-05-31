@@ -170,6 +170,14 @@ class Command(BaseCommand):
             logger.error(msg)
             msg = "org: {}, email: {}".format(reporter.org_name, reporter.email)
             logger.error(msg)
+
+            prev_report = Report.objects.get(report_id=report.report_id)
+            xml_str = dmarc_xml.decode("utf-8")
+            if prev_report.report_xml != xml_str:
+                logger.error("**** prev report ****")
+                logger.error(prev_report.report_xml)
+                logger.error("***** this email ****")
+                logger.error(xml_str)
             return
         except Error as err:
             msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
