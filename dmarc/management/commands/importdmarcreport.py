@@ -12,6 +12,7 @@ import os
 import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
+import difflib
 from argparse import FileType
 from datetime import datetime
 from email import message_from_string
@@ -176,8 +177,19 @@ class Command(BaseCommand):
             if prev_report.report_xml != xml_str:
                 logger.error("**** prev report ****")
                 logger.error(prev_report.report_xml)
-                logger.error("***** this email ****")
+                logger.error("**** this report ****")
                 logger.error(xml_str)
+                logger.error("****    diff     ****")
+                a = prev_report.report_xml.split("\n")
+                b = xml_str.split("\n")
+                diff = difflib.unified_diff(a,b,fromfile='previous_report.xml', tofile='this_report.xml')
+                o = ""
+                for d in diff:
+                    if d.endswith("\n"):
+                        o += d
+                    else:
+                        o += d + "\n"
+                logger.error(o)
             return
         except Error as err:
             msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
