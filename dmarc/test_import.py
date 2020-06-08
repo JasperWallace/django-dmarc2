@@ -86,8 +86,8 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(data[0].policy_p, 'quarantine')
         self.assertEqual(data[0].policy_sp, 'none')
         self.assertEqual(data[0].policy_pct, 100)
-        self.assertIn(u"<?xml version='1.0' encoding='utf-8'?>", data[0].report_xml)
-        self.assertIn(u"<feedback>", data[0].report_xml)
+        self.assertIn("<?xml version='1.0' encoding='utf-8'?>", data[0].report_xml)
+        self.assertIn("<feedback>", data[0].report_xml)
         # Record
         data = Record.objects.all()
         self.assertEqual(len(data), 1)

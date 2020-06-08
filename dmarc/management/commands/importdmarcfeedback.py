@@ -4,7 +4,6 @@
 # License: BSD
 # ----------------------------------------------------------------------
 """Import DMARC Feedback Reports"""
-from __future__ import unicode_literals
 
 import logging
 import os

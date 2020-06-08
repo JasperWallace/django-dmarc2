@@ -4,7 +4,6 @@
 # License: BSD
 # ----------------------------------------------------------------------
 """Import DMARC Aggregate Reports"""
-from __future__ import unicode_literals
 
 import difflib
 import gzip
