@@ -94,8 +94,8 @@ class Command(BaseCommand):
             msg = 'Unable to get rfc822 report'
             logger.error(msg)
             temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'w')
-            tmpf.write(dmarcemail.get_payload())
+            tmpf = os.fdopen(temp[0], 'wb')
+            tmpf.write(bytes(dmarcemail))
             tmpf.close()
             msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
@@ -133,6 +133,12 @@ class Command(BaseCommand):
         except:
             msg = 'Unable to get feedback-report part'
             logger.error(msg)
+
+        # should check for:
+        # Feedback-Type: auth-failure
+        # Auth-Failure: dmarc
+        # ... or something like that,
+        # see: https://tools.ietf.org/html/rfc7489#page-36
 
         if report.feedback_report:
             for line in report.feedback_report.splitlines():
@@ -218,8 +224,8 @@ class Command(BaseCommand):
             msg = 'Failed save from {}'.format(report.reporter)
             logger.error(msg)
             temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'w')
-            tmpf.write(dmarcemail.get_payload())
+            tmpf = os.fdopen(temp[0], 'wb')
+            tmpf.write(bytes(dmarcemail))
             tmpf.close()
             msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
@@ -247,8 +253,8 @@ class Command(BaseCommand):
             msg = 'Unable to get feedback report'
             logger.warning(msg)
             temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'w')
-            tmpf.write(dmarcemail.get_payload())
+            tmpf = os.fdopen(temp[0], 'wb')
+            tmpf.write(bytes(dmarcemail))
             tmpf.close()
             msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)
@@ -309,8 +315,8 @@ class Command(BaseCommand):
             msg = 'Failed save from {}'.format(dmarc_reporter)
             logger.error(msg)
             temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'w')
-            tmpf.write(dmarcemail.get_payload())
+            tmpf = os.fdopen(temp[0], 'wb')
+            tmpf.write(bytes(dmarcemail))
             tmpf.close()
             msg = 'Saved as: {}'.format(temp[1])
             logger.error(msg)

@@ -15,13 +15,13 @@ import zipfile
 from argparse import FileType
 from datetime import datetime
 from email import message_from_string
+from io import BytesIO
 
 import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import Error
 from django.db.utils import IntegrityError
-from six import BytesIO
 
 from dmarc.models import Record, Report, Reporter, Result
 
@@ -174,7 +174,7 @@ class Command(BaseCommand):
             logger.error(msg)
 
             prev_report = Report.objects.get(report_id=report.report_id)
-            xml_str = dmarc_xml.decode("utf-8")
+            xml_str = dmarc_xml
             if prev_report.report_xml != xml_str:
                 logger.error("**** prev report ****")
                 logger.error(prev_report.report_xml)

@@ -9,7 +9,7 @@ https://dmarc.org/resources/specification/
 """
 from django.contrib import admin
 
-from dmarc.models import Report
+from dmarc.models import FBReport, Report
 
 
 class ReportAdmin(admin.ModelAdmin):
@@ -34,3 +34,4 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Report, ReportAdmin)
+admin.site.register(FBReport)

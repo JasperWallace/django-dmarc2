@@ -9,13 +9,13 @@ https://dmarc.org/resources/specification/
 """
 import os
 from datetime import datetime
+from io import StringIO
 
 import pytz
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
-from django.utils.six import StringIO
 
 from dmarc.models import Record, Report, Reporter, Result
 
@@ -109,3 +109,28 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(data[1].record_type, 'dkim')
         self.assertEqual(data[1].domain, 'p-o.co.uk')
         self.assertEqual(data[1].result, 'pass')
+
+# feedback.eml is from:
+# https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-16.eml
+#
+# feedback2.eml is from:
+# https://github.com/scottgifford/bouncehammer/blob/master/t/041_mta-feedbackloop.t
+#
+
+# feedback3.eml is from:
+# https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-18.eml
+
+# feedback4.eml is from:
+# https://tools.ietf.org/html/rfc6591#page-14
+
+# Might also want to look at:
+# https://github.com/rjbs/Email-ARF/blob/master/t/messages/example2.msg
+#
+# https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-19.eml
+# https://github.com/fritids/Bisons-RFC-Theme/blob/master/bouncehandler/eml/arf3.txt
+# https://github.com/andrzejdziekonski/PHPMailer-BMH/blob/master/test/fixtures/PHP-Bounce-Handler/arf3.txt
+# https://github.com/danielsen/arf/blob/master/test/resources/sample_arf_message.txt
+#
+#
+# Maybe use this?:
+# https://github.com/danielsen/arf
