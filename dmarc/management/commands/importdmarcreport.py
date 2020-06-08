@@ -6,13 +6,13 @@
 """Import DMARC Aggregate Reports"""
 from __future__ import unicode_literals
 
+import difflib
 import gzip
 import logging
 import os
 import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
-import difflib
 from argparse import FileType
 from datetime import datetime
 from email import message_from_string
@@ -62,6 +62,8 @@ class Command(BaseCommand):
         logger.info("Importing DMARC Aggregate Reports")
 
         dmarc_xml = ''
+
+        email = None
 
         if options['email']:
             email = options['email'].read()
@@ -182,7 +184,7 @@ class Command(BaseCommand):
                 logger.error("****    diff     ****")
                 a = prev_report.report_xml.split("\n")
                 b = xml_str.split("\n")
-                diff = difflib.unified_diff(a,b,fromfile='previous_report.xml', tofile='this_report.xml')
+                diff = difflib.unified_diff(a, b, fromfile='previous_report.xml', tofile='this_report.xml')
                 o = ""
                 for d in diff:
                     if d.endswith("\n"):

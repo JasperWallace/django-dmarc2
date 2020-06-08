@@ -149,27 +149,27 @@ DMARC reporting
 
 Aggregated feedback reports are available from the Admin page at admin/dmarc.
 
-.. image:: ./docs/images/dmarc-index.png
+.. image:: ./images/dmarc-index.png
    :alt: Django Administration showing this DMARC application
 
 From the DMARC dashboard at 'Site administration/DMARC' where the intention is
 to highlight a summary of recent reports, there is one report 'DMARC feedback
 reports' and is available to any user with staff members authorization.
 
-.. image:: ./docs/images/dmarc-dashboard.png
+.. image:: ./images/dmarc-dashboard.png
    :alt: DMARC dashboard
 
 This is an example report, it can also be downloaded as a csv file suitable
 for importing into your favourite spreadsheet.
 
-.. image:: ./docs/images/dmarc-report.png
+.. image:: ./images/dmarc-report.png
    :alt: Example DMARC aggregate feedback report
 
 The report can be filtered by clicking on the filter and changing any of the
 reporting period, only showing errors/failures, disposition (quarantine,
 rejection or any) and by source ip address/reporting organisation.
 
-.. image:: ./docs/images/dmarc-reportfilter.png
+.. image:: ./images/dmarc-reportfilter.png
    :alt: Example DMARC aggregate feedback report
 
 These reports can help ease any DMARC implementation.

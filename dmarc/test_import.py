@@ -31,7 +31,7 @@ class ImportDMARCReportTestCase(TestCase):
 
     def test_import_noargs(self):
         """Test importing without args"""
-        msg = 'Check usage, please supply a single DMARC report file or - for email on stdin'
+        msg = 'Check usage, please supply a single DMARC report file or email'
         out = StringIO()
         try:
             call_command('importdmarcreport', stdout=out)
@@ -41,12 +41,14 @@ class ImportDMARCReportTestCase(TestCase):
 
     def test_import_filenotfound(self):
         """Test importing xml file not found"""
-        msg = 'Unable to find DMARC file: filenotfound.xml'
+        msg = 'Error: argument -x/--xml: can\'t open \'filenotfound.xml\''
+        msg += ': [Errno 2] No such file or directory: \'filenotfound.xml\''
         out = StringIO()
         msgerror = ''
         try:
             call_command(
                 'importdmarcreport',
+                '--xml',
                 'filenotfound.xml',
                 stderr=out)
         except CommandError as cmderror:
@@ -60,7 +62,7 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(len(data), 0)
         dmarcreport = os.path.dirname(os.path.realpath(__file__))
         dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport.xml')
-        call_command('importdmarcreport', dmarcreport, stdout=out)
+        call_command('importdmarcreport', '--xml', dmarcreport, stdout=out)
         self.assertIn('', out.getvalue())
         # Reporter object
         data = Reporter.objects.all()

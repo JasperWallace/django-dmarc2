@@ -10,11 +10,11 @@ import logging
 import os
 import tempfile
 from argparse import FileType
-from io import StringIO
 from datetime import datetime
 from email import message_from_string
 from email.generator import Generator
 from email.utils import mktime_tz, parsedate_tz
+from io import StringIO
 
 import pytz
 from django.core.exceptions import ObjectDoesNotExist
