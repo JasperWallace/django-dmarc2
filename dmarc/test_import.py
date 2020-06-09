@@ -17,12 +17,12 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 
-from dmarc.models import Record, Report, Reporter, Result
+from dmarc.models import FBReport, FBReporter, Record, Report, Reporter, Result
 
 
 class ImportDMARCReportTestCase(TestCase):
     """
-    Standard core tests
+    Test importing aggregate reports
     """
 
     def setUp(self):
@@ -110,18 +110,125 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(data[1].domain, 'p-o.co.uk')
         self.assertEqual(data[1].result, 'pass')
 
-# feedback.eml is from:
-# https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-16.eml
-#
-# feedback2.eml is from:
-# https://github.com/scottgifford/bouncehammer/blob/master/t/041_mta-feedbackloop.t
-#
 
-# feedback3.eml is from:
-# https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-18.eml
+class ImportDMARCFeedbackTestCase(TestCase):
+    """
+    Test importing feedback reports
+    """
 
-# feedback4.eml is from:
-# https://tools.ietf.org/html/rfc6591#page-14
+    def test_feedback_import_noargs(self):
+        """Test importing a feedback report without args"""
+        msg = 'Check usage, please supply a single DMARC feedback report email'
+        out = StringIO()
+        try:
+            call_command('importdmarcfeedback', stdout=out)
+        except CommandError as cmderror:
+            msgerror = str(cmderror)
+        self.assertIn(msg, msgerror)
+
+    # feedback.eml is from:
+    # https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-16.eml
+    def test_feedback_import_actually_abuse(self):
+        """Test importing a feedback report thats an abuse report, not a DMARC feedback report"""
+        out = StringIO()
+
+        msgerror = None
+
+        dmarcfeedback = os.path.dirname(os.path.realpath(__file__))
+        dmarcfeedback = os.path.join(dmarcfeedback, 'tests/feedback.eml')
+        try:
+            call_command(
+                'importdmarcfeedback',
+                '--email',
+                dmarcfeedback)
+        except CommandError as cmderror:
+            msgerror = str(cmderror)
+        print(msgerror)
+
+        # We should not have any objects for this report
+        data = FBReporter.objects.all()
+        self.assertEqual(len(data), 0)
+        # Report object
+        data = FBReport.objects.all()
+        self.assertEqual(len(data), 0)
+
+    # feedback2.eml is from:
+    # https://github.com/scottgifford/bouncehammer/blob/master/t/041_mta-feedbackloop.t
+    def test_feedback_import_also_actually_abuse(self):
+        """Test importing a feedback report thats an abuse report, not a DMARC feedback report"""
+        out = StringIO()
+
+        dmarcfeedback = os.path.dirname(os.path.realpath(__file__))
+        dmarcfeedback = os.path.join(dmarcfeedback, 'tests/feedback2.eml')
+        try:
+            call_command(
+                'importdmarcfeedback',
+                '--email',
+                dmarcfeedback,
+                stdout=out)
+        except CommandError as cmderror:
+            msgerror = str(cmderror)
+        self.assertIn('', out.getvalue())
+
+        # We should not have any objects for this report
+        data = FBReporter.objects.all()
+        self.assertEqual(len(data), 0)
+        # Report object
+        data = FBReport.objects.all()
+        self.assertEqual(len(data), 0)
+
+    # feedback3 is right(?)
+    # feedback3.eml is from:
+    # https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-18.eml
+    def test_feedback_import(self):
+        """Test importing a DMARC feedback report"""
+        out = StringIO()
+
+        dmarcfeedback = os.path.dirname(os.path.realpath(__file__))
+        dmarcfeedback = os.path.join(dmarcfeedback, 'tests/feedback3.eml')
+        try:
+            call_command(
+                'importdmarcfeedback',
+                '--email',
+                dmarcfeedback,
+                stdout=out)
+        except CommandError as cmderror:
+            msgerror = str(cmderror)
+            print(msgerror)
+        self.assertIn('', out.getvalue())
+
+        # We should not have any objects for this report
+        data = FBReporter.objects.all()
+        self.assertEqual(len(data), 1)
+        # Report object
+        data = FBReport.objects.all()
+        self.assertEqual(len(data), 1)
+
+    # feedback4 is wrong for us - it's a DKIM failure
+    # feedback4.eml is from:
+    # https://tools.ietf.org/html/rfc6591#page-14
+    def test_feedback_import_also_actually_dkim(self):
+        """Test importing a feedback report thats a DKIM failure report, not a DMARC feedback report"""
+        out = StringIO()
+
+        dmarcfeedback = os.path.dirname(os.path.realpath(__file__))
+        dmarcfeedback = os.path.join(dmarcfeedback, 'tests/feedback4.eml')
+        try:
+            call_command(
+                'importdmarcfeedback',
+                '--email',
+                dmarcfeedback,
+                stdout=out)
+        except CommandError as cmderror:
+            msgerror = str(cmderror)
+        self.assertIn('', out.getvalue())
+
+        # We should not have any objects for this report
+        data = FBReporter.objects.all()
+        self.assertEqual(len(data), 0)
+        # Report object
+        data = FBReport.objects.all()
+        self.assertEqual(len(data), 0)
 
 # Might also want to look at:
 # https://github.com/rjbs/Email-ARF/blob/master/t/messages/example2.msg

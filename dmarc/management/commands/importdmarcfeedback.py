@@ -29,15 +29,16 @@ class Command(BaseCommand):
     Command class for importing DMARC Feedback Reports
     Most errors are not raised to prevent email bounces
     """
-    help = 'Imports a DMARC Feedback Report from an email'
+
+    help = "Imports a DMARC Feedback Report from an email"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-e',
-            '--email',
-            type=FileType('r'),
+            "-e",
+            "--email",
+            type=FileType("r"),
             default=False,
-            help='Import from email file, or - for stdin'
+            help="Import from email file, or - for stdin",
         )
 
     def handle(self, *args, **options):
@@ -47,19 +48,19 @@ class Command(BaseCommand):
 
         logger.info("Importing DMARC Feedback Report")
 
-        if not options['email']:
-            msg = "Check usage, please supply a single DMARC report file or email"
+        if not options["email"]:
+            msg = "Check usage, please supply a single DMARC feedback report email"
             logger.error(msg)
             raise CommandError(msg)
 
-        msg = 'Processing email'
+        msg = "Processing email"
         logger.debug(msg)
 
         try:
-            email = options['email'].read()
+            email = options["email"].read()
             dmarcemail = message_from_string(email)
         except:
-            msg = 'Unable to use email'
+            msg = "Unable to use email"
             logger.debug(msg)
             raise CommandError(msg)
 
@@ -69,37 +70,65 @@ class Command(BaseCommand):
             self.process_822(dmarcemail)
 
     @staticmethod
+    def save_email(dmarcemail):
+        temp = tempfile.mkstemp(prefix="dmarc-", suffix=".eml")
+        tmpf = os.fdopen(temp[0], "wb")
+        tmpf.write(bytes(dmarcemail))
+        tmpf.close()
+        msg = "Saved as: {}".format(temp[1])
+        logger.error(msg)
+        raise CommandError(msg)
+
+    @staticmethod
     def process_multipart(dmarcemail):
         """Extract multipart report"""
         # pylint: disable=too-many-branches,too-many-locals,too-many-statements
         # pylint: disable=too-many-nested-blocks
+
+        # Get the human readable part
+        try:
+            mimepart = dmarcemail.get_payload(0)
+            if mimepart.get_content_type() != "text/plain":
+                raise ValueError("Wrong mime type for the first mime part")
+
+            mimepart = dmarcemail.get_payload(1)
+            if mimepart.get_content_type() != "message/feedback-report":
+                raise ValueError("Wrong mime type for the second mime part")
+
+            mimepart = dmarcemail.get_payload(2)
+            if mimepart.get_content_type() not in (
+                "message/rfc822",
+                "text/rfc822-headers",
+                "message/rfc822-headers",
+                "text/rfc822",
+            ):
+                raise ValueError("Wrong mime type for the third mime part")
+
+        except Exception as e:
+            msg = "Mime-Types: " + e
+            logger.warning(msg)
+            Command.save_email(dmarcemail)
+
         report = FBReport()
         dmarc_reporter = None
         try:
-            dmarcemail.get_payload()
-            dmarc_reporter = dmarcemail.get('from')
+            dmarc_reporter = dmarcemail.get("from")
             report.reporter = FBReporter.objects.get(email=dmarc_reporter)
             mimepart = dmarcemail.get_payload()
         except ObjectDoesNotExist:
             try:
-                report.reporter = FBReporter.objects.create(
-                    org_name=dmarc_reporter,
-                    email=dmarc_reporter,
+                report.reporter = FBReporter(
+                    org_name=dmarc_reporter, email=dmarc_reporter,
                 )
             except:
-                msg = 'Failed to find or create reporter {}'.format(dmarc_reporter)
+                msg = "Failed to find or create reporter {}".format(dmarc_reporter)
                 logger.error(msg)
                 raise CommandError(msg)
         except:
-            msg = 'Unable to get rfc822 report'
+            msg = "Unable to get rfc822 report"
             logger.error(msg)
-            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'wb')
-            tmpf.write(bytes(dmarcemail))
-            tmpf.close()
-            msg = 'Saved as: {}'.format(temp[1])
-            logger.error(msg)
-            raise CommandError(msg)
+            Command.save_email(dmarcemail)
+
         out = StringIO()
         gen = Generator(out, maxheaderlen=0)
         gen.flatten(dmarcemail)
@@ -107,32 +136,31 @@ class Command(BaseCommand):
         gen = None
         out = None
 
-        # Get the human readable part
         try:
+            # Get the human readable part
             mimepart = dmarcemail.get_payload(0)
-            if mimepart.get_content_type() == 'text/plain':
-                # get the human-readable part of the message
-                report.description = mimepart
+            # get the human-readable part of the message
+            report.description = mimepart
         except:
-            msg = 'Unable to get human readable part'
+            msg = "Unable to get human readable part"
             logger.warning(msg)
+            raise CommandError(msg)
 
         # Get the feedback report
+        reportpart = None
         try:
             mimepart = dmarcemail.get_payload(1)
-            if mimepart.get_content_type() == 'message/feedback-report':
-                out = StringIO()
-                gen = Generator(out, maxheaderlen=0)
-                gen.flatten(mimepart)
-                report.feedback_report = out.getvalue()
-                gen = None
-                out = None
-            else:
-                msg = 'Found {} instead of message/feedback-report'.format(mimepart.get_content_type())
-                logger.error(msg)
+            reportpart = mimepart
+            out = StringIO()
+            gen = Generator(out, maxheaderlen=0)
+            gen.flatten(mimepart)
+            report.feedback_report = out.getvalue()
+            gen = None
+            out = None
         except:
-            msg = 'Unable to get feedback-report part'
+            msg = "Unable to get feedback-report part"
             logger.error(msg)
+            Command.save_email(dmarcemail)
 
         # should check for:
         # Feedback-Type: auth-failure
@@ -140,96 +168,116 @@ class Command(BaseCommand):
         # ... or something like that,
         # see: https://tools.ietf.org/html/rfc7489#page-36
 
-        if report.feedback_report:
-            for line in report.feedback_report.splitlines():
-                line = line.lstrip()
-                (ls0, ls1, ls2) = line.partition(':')
-                ls0 = ls0.strip()
-                ls2 = ls2.strip()
-                if ls1:
-                    if not report.domain:
-                        if ls0 == 'Reported-Domain':
-                            report.domain = ls2
-                    if not report.source_ip:
-                        if ls0 == 'Source-IP':
-                            report.source_ip = ls2
-                    if not report.email_from:
-                        if ls0 == 'Original-Mail-From':
-                            report.email_from = ls2
-                    if not report.date:
-                        if ls0 == 'Arrival-Date':
-                            try:
-                                # get tuples
-                                tuples = parsedate_tz(ls2)
-                                # get timestamp
-                                time = mktime_tz(tuples)
-                                report.date = datetime.fromtimestamp(time)
-                                tz_utc = pytz.timezone('UTC')
-                                report.date = report.date.replace(tzinfo=tz_utc)
-                            except:
-                                msg = 'Unable to get date from: {}'.format(ls2)
-                                logger.error(msg)
-                                report.date = datetime.now()
-                    if not report.dmarc_result:
-                        if ls0 == 'Delivery-Result':
-                            report.dmarc_result = ls2
-                    if ls0 == 'Authentication-Results':
-                        auth_results = ls2.split()
-                        for result in auth_results:
-                            (typ, eq_sign, alignment) = result.partition('=')
-                            if not eq_sign:
-                                continue
-                            if not report.dkim_alignment and typ == 'dkim':
-                                report.dkim_alignment = alignment.rstrip(';')
-                            if not report.spf_alignment and typ == 'spf':
-                                report.spf_alignment = alignment.rstrip(';')
+        if report.feedback_report and reportpart:
+            first = False
+            headers = {}
+            for p in reportpart.walk():
+                if not first:
+                    first = True
+                else:
+                    # XXX this mangles multiple
+                    # keys with different values
+                    for k in p.keys():
+                        # print(k, p[k])
+                        if k not in headers:
+                            headers[k] = [
+                                p[k],
+                            ]
+                        else:
+                            headers[k].append(p[k])
+
+            # print(headers)
+
+            if "Feedback-Type" not in headers or "Auth-Failure" not in headers:
+                logger.error("Probably not a DMARC feedback email, missing headers")
+                Command.save_email(dmarcemail)
+
+            if headers["Feedback-Type"][0] != "auth-failure":
+                logger.error(
+                    "Probably not a DMARC feedback email, not an auth-failure message: {}".format(
+                        headers["Feedback-Type"][0]
+                    )
+                )
+                Command.save_email(dmarcemail)
+
+            if headers["Auth-Failure"][0] != "dmarc":
+                logger.error(
+                    "Probably not a DMARC feedback email, auth-failure wasn't dmarc: {}".format(
+                        headers["Auth-Failure"][0]
+                    )
+                )
+                Command.save_email(dmarcemail)
+
+            if "Reported-Domain" in headers:
+                report.domain = headers["Reported-Domain"][0]
+            if "Source-IP" in headers:
+                report.source_ip = headers["Source-IP"][0]
+            if "Original-Mail-From" in headers:
+                report.email_from = headers["Original-Mail-From"][0]
+            if "Arrival-Date" in headers:
+                arrival_date = headers["Arrival-Date"][0]
+                try:
+                    # get tuples
+                    tuples = parsedate_tz(arrival_date)
+                    # get timestamp
+                    time = mktime_tz(tuples)
+                    report.date = datetime.fromtimestamp(time)
+                    tz_utc = pytz.timezone("UTC")
+                    report.date = report.date.replace(tzinfo=tz_utc)
+                except:
+                    msg = "Unable to get date from: {}".format(ls2)
+                    logger.error(msg)
+                    report.date = datetime.now()
+
+            if "Delivery-Result" in headers:
+                report.dmarc_result = headers["Delivery-Result"][0]
+            if "Authentication-Results" in headers:
+                auth_results = headers["Authentication-Results"][0].split()
+                for result in auth_results:
+                    (typ, eq_sign, alignment) = result.partition("=")
+                    if not eq_sign:
+                        continue
+                    if not report.dkim_alignment and typ == "dkim":
+                        report.dkim_alignment = alignment.rstrip(";")
+                    if not report.spf_alignment and typ == "spf":
+                        report.spf_alignment = alignment.rstrip(";")
 
         # Get the rfc822 headers and any message
         out = StringIO()
         gen = Generator(out, maxheaderlen=0)
         try:
-            mimepart = dmarcemail.get_payload(2, False)
-            mimepart_type = mimepart.get_content_type()
+            mimepart = dmarcemail.get_payload(2)
             gen.flatten(mimepart)
-            if mimepart_type == 'message/rfc822':
-                report.email_source = out.getvalue()
-            elif mimepart_type == 'message/rfc822-headers':
-                report.email_source = out.getvalue()
-            elif mimepart_type == 'text/rfc822':
-                report.email_source = out.getvalue()
-            elif mimepart_type == 'text/rfc822-headers':
-                report.email_source = out.getvalue()
-            else:
-                msg = 'Found {} instead of rfc822'.format(mimepart_type)
-                logger.debug(msg)
+            report.email_source = out.getvalue()
         except:
-            msg = 'Unable to get rfc822 part'
+            msg = "Unable to get rfc822 part"
             logger.warning(msg)
+            Command.save_email(dmarcemail)
         gen = None
         out = None
         if report.email_source:
+            # XXX also use the header parser part of the email module here.
             for line in report.email_source.splitlines():
                 line = line.lstrip()
-                (ls0, ls1, ls2) = line.partition(':')
+                (ls0, ls1, ls2) = line.partition(":")
                 ls0 = ls0.strip()
                 ls2 = ls2.strip()
                 if ls1:
                     if not report.email_subject:
-                        if ls0 == 'Subject':
+                        if ls0 == "Subject":
                             report.email_subject = ls2
-
         try:
+            reporter = report.reporter
+            reporter.save()
+            report.reporter = reporter
             report.save()
-        except:
-            msg = 'Failed save from {}'.format(report.reporter)
+        except Exception as e:
+            msg = "Failed save from {}".format(report.reporter)
             logger.error(msg)
-            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'wb')
-            tmpf.write(bytes(dmarcemail))
-            tmpf.close()
-            msg = 'Saved as: {}'.format(temp[1])
-            logger.error(msg)
+            logger.exception(e)
+            Command.save_email(dmarcemail)
 
+    # XXX not needed??
     @staticmethod
     def process_822(dmarcemail):
         """Extract report from rfc822 email, non standard"""
@@ -237,28 +285,21 @@ class Command(BaseCommand):
         report = FBReport()
         dmarc_reporter = None
         try:
-            dmarc_reporter = dmarcemail.get('from')
+            dmarc_reporter = dmarcemail.get("from")
             report.reporter = FBReporter.objects.get(email=dmarc_reporter)
         except ObjectDoesNotExist:
             try:
                 report.reporter = FBReporter.objects.create(
-                    org_name=dmarc_reporter,
-                    email=dmarc_reporter,
+                    org_name=dmarc_reporter, email=dmarc_reporter,
                 )
             except:
-                msg = 'Failed to find or create reporter {}'.format(dmarc_reporter)
+                msg = "Failed to find or create reporter {}".format(dmarc_reporter)
                 logger.error(msg)
                 raise CommandError(msg)
         except:
-            msg = 'Unable to get feedback report'
+            msg = "Unable to get feedback report"
             logger.warning(msg)
-            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'wb')
-            tmpf.write(bytes(dmarcemail))
-            tmpf.close()
-            msg = 'Saved as: {}'.format(temp[1])
-            logger.error(msg)
-            raise CommandError(msg)
+            Command.save_email(dmarcemail)
         report.feedback_source = dmarcemail.get_payload()
         out = StringIO()
         gen = Generator(out, maxheaderlen=0)
@@ -270,53 +311,48 @@ class Command(BaseCommand):
 
         for line in report.feedback_source.splitlines():
             line = line.lstrip()
-            (ls0, ls1, ls2) = line.partition(':')
+            (ls0, ls1, ls2) = line.partition(":")
             ls0 = ls0.strip()
             ls2 = ls2.strip()
             if ls1:
                 if not report.domain:
-                    if ls0 == 'Sender Domain':
+                    if ls0 == "Sender Domain":
                         report.domain = ls2
                 if not report.source_ip:
-                    if ls0 == 'Sender IP Address':
+                    if ls0 == "Sender IP Address":
                         report.source_ip = ls2
                 if not report.date:
-                    if ls0 == 'Received Date':
+                    if ls0 == "Received Date":
                         try:
                             # get tuples
                             tuples = parsedate_tz(ls2)
                             # get timestamp
                             time = mktime_tz(tuples)
                             report.date = datetime.fromtimestamp(time)
-                            tz_utc = pytz.timezone('UTC')
+                            tz_utc = pytz.timezone("UTC")
                             report.date = report.date.replace(tzinfo=tz_utc)
                         except:
-                            msg = 'Unable to get date from: {}'.format(ls2)
+                            msg = "Unable to get date from: {}".format(ls2)
                             logger.error(msg)
                             report.date = datetime.now()
                 if not report.spf_alignment:
-                    if ls0 == 'SPF Alignment':
+                    if ls0 == "SPF Alignment":
                         report.spf_alignment = ls2
                 if not report.dkim_alignment:
-                    if ls0 == 'DKIM Alignment':
+                    if ls0 == "DKIM Alignment":
                         report.dkim_alignment = ls2
                 if not report.dmarc_result:
-                    if ls0 == 'DMARC Results':
+                    if ls0 == "DMARC Results":
                         report.dmarc_result = ls2
                 if not report.email_from:
-                    if ls0 == 'From':
+                    if ls0 == "From":
                         report.email_from = ls2
                 if not report.email_subject:
-                    if ls0 == 'Subject':
+                    if ls0 == "Subject":
                         report.email_subject = ls2
         try:
             report.save()
         except:
-            msg = 'Failed save from {}'.format(dmarc_reporter)
+            msg = "Failed save from {}".format(dmarc_reporter)
             logger.error(msg)
-            temp = tempfile.mkstemp(prefix='dmarc-', suffix='.eml')
-            tmpf = os.fdopen(temp[0], 'wb')
-            tmpf.write(bytes(dmarcemail))
-            tmpf.close()
-            msg = 'Saved as: {}'.format(temp[1])
-            logger.error(msg)
+            Command.save_email(dmarcemail)
