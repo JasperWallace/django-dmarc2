@@ -20,7 +20,7 @@ from io import BytesIO
 import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-from django.db import Error
+from django.db import Error, transaction
 from django.db.utils import IntegrityError
 
 from dmarc.models import Record, Report, Reporter, Result
@@ -164,7 +164,8 @@ class Command(BaseCommand):
         report.policy_pct = policy_pct
         report.report_xml = dmarc_xml
         try:
-            report.save()
+            with transaction.atomic():
+                report.save()
         except IntegrityError as err:
             msg = "DMARC duplicate report record: {}".format(err)
             logger.error(msg)
@@ -174,15 +175,18 @@ class Command(BaseCommand):
             logger.error(msg)
 
             prev_report = Report.objects.get(report_id=report.report_id)
-            xml_str = dmarc_xml
-            if prev_report.report_xml != xml_str:
+
+            prev = prev_report.report_xml
+            this = dmarc_xml
+
+            if prev != this:
                 logger.error("**** prev report ****")
-                logger.error(prev_report.report_xml)
+                logger.error(prev)
                 logger.error("**** this report ****")
-                logger.error(xml_str)
+                logger.error(this)
                 logger.error("****    diff     ****")
-                a = prev_report.report_xml.split("\n")
-                b = str(xml_str).split("\n")
+                a = prev.split("\n")
+                b = this.split("\n")
                 diff = difflib.unified_diff(a, b, fromfile='previous_report.xml', tofile='this_report.xml')
                 o = ""
                 for d in diff:
@@ -367,4 +371,7 @@ class Command(BaseCommand):
                     myname = 'Not provided'
                 msg = "DMARC Report is not in mimepart: {}".format(myname)
                 logger.debug(msg)
+
+        if not isinstance(dmarc_xml, str):
+            dmarc_xml = dmarc_xml.decode("utf-8")
         return dmarc_xml

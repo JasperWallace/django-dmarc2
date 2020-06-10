@@ -110,6 +110,40 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(data[1].domain, 'p-o.co.uk')
         self.assertEqual(data[1].result, 'pass')
 
+    def test_importdmarcreport_file_duplicate(self):
+        """Test importing a duplicate xml file"""
+        out = StringIO()
+        data = Reporter.objects.all()
+        self.assertEqual(len(data), 0)
+
+        dmarcreport = os.path.dirname(os.path.realpath(__file__))
+        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport.xml')
+        call_command('importdmarcreport', '--xml', dmarcreport, stdout=out)
+        self.assertIn('', out.getvalue())
+
+        # Reporter object
+        data = Reporter.objects.all()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0].org_name, 'Persistent Objects')
+        self.assertEqual(data[0].email, 'ahicks@p-o.co.uk')
+
+        # Report object
+        data = Report.objects.all()
+        self.assertEqual(len(data), 1)
+
+        dmarcreport = os.path.dirname(os.path.realpath(__file__))
+        dmarcreport = os.path.join(dmarcreport, 'tests/duplicate_report.eml')
+        call_command('importdmarcreport', '--email', dmarcreport, stdout=out)
+        self.assertIn('', out.getvalue())
+
+        # should still be one of each
+        data = Reporter.objects.all()
+        self.assertEqual(len(data), 1)
+
+        # Report object
+        data = Report.objects.all()
+        self.assertEqual(len(data), 1)
+
 
 class ImportDMARCFeedbackTestCase(TestCase):
     """
