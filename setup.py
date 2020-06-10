@@ -22,9 +22,12 @@ setup(
     download_url='https://pypi.python.org/pypi/django-dmarc2',
     author='Alan Hicks',
     author_email='ahicks@p-o.co.uk',
-    requires=['django', ],
+    install_requires=['django>=2.2.0,<2.3.0', 'django-netfields'],
     python_requires='>=3.7.0',
     classifiers=[
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Framework :: Django',
