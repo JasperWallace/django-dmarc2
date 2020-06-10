@@ -182,7 +182,7 @@ class Command(BaseCommand):
                 logger.error(xml_str)
                 logger.error("****    diff     ****")
                 a = prev_report.report_xml.split("\n")
-                b = xml_str.split("\n")
+                b = str(xml_str).split("\n")
                 diff = difflib.unified_diff(a, b, fromfile='previous_report.xml', tofile='this_report.xml')
                 o = ""
                 for d in diff:
