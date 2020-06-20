@@ -22,7 +22,7 @@ from dmarc.models import Report
 logger = logging.getLogger(__name__)
 
 
-class Echo(object):
+class Echo:
     """An object that implements just the write method of the file-like
     interface for csv.writer.
     """

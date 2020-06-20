@@ -71,6 +71,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def save_email(dmarcemail):
+        """Save an email to a temp file"""
         temp = tempfile.mkstemp(prefix="dmarc-", suffix=".eml")
         tmpf = os.fdopen(temp[0], "wb")
         tmpf.write(bytes(dmarcemail))
@@ -97,10 +98,10 @@ class Command(BaseCommand):
 
             mimepart = dmarcemail.get_payload(2)
             if mimepart.get_content_type() not in (
-                "message/rfc822",
-                "text/rfc822-headers",
-                "message/rfc822-headers",
-                "text/rfc822",
+                    "message/rfc822",
+                    "text/rfc822-headers",
+                    "message/rfc822-headers",
+                    "text/rfc822",
             ):
                 raise ValueError("Wrong mime type for the third mime part")
 

@@ -17,7 +17,7 @@ class Reporter(models.Model):
     email = models.EmailField()
 
     def __str__(self):
-        return self.org_name
+        return str(self.org_name)
 
 
 class Report(models.Model):
@@ -36,9 +36,9 @@ class Report(models.Model):
     report_xml = models.TextField(blank=True)
 
     def __str__(self):
-        return self.report_id
+        return str(self.report_id)
 
-    class Meta(object):
+    class Meta:
         """Model constraints"""
         # pylint: disable=too-few-public-methods
 
@@ -59,7 +59,7 @@ class Record(models.Model):
     identifier_headerfrom = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.source_ip
+        return str(self.source_ip)
 
 
 class Result(models.Model):
@@ -81,7 +81,7 @@ class FBReporter(models.Model):
     email = models.EmailField()
 
     def __str__(self):
-        return self.email
+        return str(self.email)
 
     def save(self, *args, **kwargs):
         # pylint: disable=arguments-differ
