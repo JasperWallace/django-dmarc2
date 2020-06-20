@@ -29,7 +29,7 @@ class Echo:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def write(_, value):
+    def write(value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
 
