@@ -80,12 +80,10 @@ class Command(BaseCommand):
         tz_utc = pytz.timezone('UTC')
         try:
             root = ET.fromstring(dmarc_xml)
-        except:
+        except Exception:
             msg = "Processing xml failed: {} // {}".format(dmarc_xml, email)
-            logger.error(msg)
+            logger.exception(msg)
             return
-
-        orig_email = email
 
         # Report metadata
         report_metadata = root.findall('report_metadata')
@@ -116,9 +114,9 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             try:
                 reporter = Reporter.objects.create(org_name=org_name, email=email)
-            except Error as err:
-                msg = "Unable to create DMARC report for {}: {}".format(org_name, err)
-                logger.error(msg)
+            except Error:
+                msg = "Unable to create DMARC report for {}".format(org_name)
+                logger.exception(msg)
 
         # Reporting policy
         policy_published = root.findall('policy_published')
@@ -151,9 +149,9 @@ class Command(BaseCommand):
         try:
             report_date_begin = datetime.fromtimestamp(float(report_begin)).replace(tzinfo=tz_utc)
             report_date_end = datetime.fromtimestamp(float(report_end)).replace(tzinfo=tz_utc)
-        except:
+        except Exception:
             msg = "Unable to understand DMARC reporting dates"
-            logger.error(msg)
+            logger.exception(msg)
         report.date_begin = report_date_begin
         report.date_end = report_date_end
         report.policy_domain = policy_domain
@@ -166,9 +164,9 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 report.save()
-        except IntegrityError as err:
-            msg = "DMARC duplicate report record: {}".format(err)
-            logger.error(msg)
+        except IntegrityError:
+            msg = "DMARC duplicate report record"
+            logger.exception(msg)
             msg = "{} // {} // {}".format(report.reporter, report.report_id, report.date_begin)
             logger.error(msg)
             msg = "org: {}, email: {}".format(reporter.org_name, reporter.email)
@@ -196,9 +194,9 @@ class Command(BaseCommand):
                         o += d + "\n"
                 logger.error(o)
             return
-        except Error as err:
-            msg = "Unable to save the DMARC report header {}: {}".format(report_id, err)
-            logger.error(msg)
+        except Error:
+            msg = "Unable to save the DMARC report header {}".format(report_id)
+            logger.exception(msg)
 
         ok_records = 0
         # Record
@@ -251,12 +249,12 @@ class Command(BaseCommand):
             try:
                 record.save()
                 ok_records += 1
-            except IntegrityError as err:
-                msg = "DMARC duplicate record: {}".format(err)
-                logger.error(msg)
-            except Error as err:
-                msg = "Unable to save the DMARC report record: {}".format(err)
-                logger.error(msg)
+            except IntegrityError:
+                msg = "DMARC duplicate record"
+                logger.exception(msg)
+            except Error:
+                msg = "Unable to save the DMARC report record"
+                logger.exception(msg)
 
             auth_results = node.find('auth_results')
             for resulttype in auth_results:
@@ -275,13 +273,12 @@ class Command(BaseCommand):
                 try:
                     result.save()
                     ok_records += 1
-                except Error as err:
-                    msg = "Unable to save the DMARC report result {} for {}: {}".format(
+                except Error:
+                    msg = "Unable to save the DMARC report result {} for {}".format(
                         resulttype.tag,
                         result_domain,
-                        err.message
                     )
-                    logger.error(msg)
+                    logger.exception(msg)
         if ok_records == 0:
             msg = "didn't get any usable records, deleteing the report"
             logger.error(msg)
@@ -298,9 +295,9 @@ class Command(BaseCommand):
         logger.debug(msg)
         try:
             dmarcemail = message_from_string(email)
-        except:
+        except Exception:
             msg = 'Unable to use email'
-            logger.debug(msg)
+            logger.exception(msg)
             return ''
 
         for mimepart in dmarcemail.walk():
@@ -333,7 +330,7 @@ class Command(BaseCommand):
                         archive.close()
                     except zipfile.BadZipfile:
                         msg = 'Unable to unzip mimepart'
-                        logger.error(msg)
+                        logger.exception(msg)
                         temp = tempfile.mkstemp(prefix='dmarc-', suffix='.zip')
                         dmarc_zip.seek(0)
                         tmpf = os.fdopen(temp[0], 'w')
@@ -353,9 +350,9 @@ class Command(BaseCommand):
                         archive = None
                         msg = "DMARC successfully extracted xml from gzip"
                         logger.debug(msg)
-                    except:
+                    except Exception:
                         msg = 'Unable to gunzip mimepart'
-                        logger.error(msg)
+                        logger.exception(msg)
                         temp = tempfile.mkstemp(prefix='dmarc-', suffix='.gz')
                         dmarc_zip.seek(0)
                         tmpf = os.fdopen(temp[0], 'w')
@@ -367,8 +364,9 @@ class Command(BaseCommand):
             else:
                 try:
                     myname = mimepart.get_filename()
-                except:
-                    myname = 'Not provided'
+                except Exception:
+                    myname = 'Not able to find part filename'
+                    logger.exception(myname)
                 msg = "DMARC Report is not in mimepart: {}".format(myname)
                 logger.debug(msg)
 

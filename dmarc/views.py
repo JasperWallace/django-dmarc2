@@ -9,6 +9,7 @@ https://dmarc.org/resources/specification/
 """
 import csv
 import datetime
+import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -17,6 +18,8 @@ from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
 
 from dmarc.models import Report
+
+logger = logging.getLogger(__name__)
 
 
 class Echo(object):
@@ -41,7 +44,8 @@ def _sql_cursor(request_args):
         val = request_args['dmarc_date_from']
         try:
             val = datetime.datetime.strptime(val, '%Y-%m-%d')
-        except:
+        except ValueError:
+            logger.exception("when trying to parse date_from {}".format(val))
             val = datetime.date.today()
         sql_where.append('dmarc_report.date_begin >= %s')
         sql_params.append(val)
@@ -49,7 +53,8 @@ def _sql_cursor(request_args):
         val = request_args['dmarc_date_to']
         try:
             val = datetime.datetime.strptime(val, '%Y-%m-%d')
-        except:
+        except ValueError:
+            logger.exception("when trying to parse date_to {}".format(val))
             val = datetime.date.today()
         val += datetime.timedelta(days=1)
         sql_where.append('dmarc_report.date_end < %s')

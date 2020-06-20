@@ -59,9 +59,9 @@ class Command(BaseCommand):
         try:
             email = options["email"].read()
             dmarcemail = message_from_string(email)
-        except:
+        except Exception:
             msg = "Unable to use email"
-            logger.debug(msg)
+            logger.exception(msg)
             raise CommandError(msg)
 
         if dmarcemail.is_multipart():
@@ -104,9 +104,9 @@ class Command(BaseCommand):
             ):
                 raise ValueError("Wrong mime type for the third mime part")
 
-        except Exception as e:
-            msg = "Mime-Types: " + e
-            logger.warning(msg)
+        except Exception:
+            msg = "Mime-Types checking"
+            logger.exception(msg)
             Command.save_email(dmarcemail)
 
         report = FBReport()
@@ -120,13 +120,13 @@ class Command(BaseCommand):
                 report.reporter = FBReporter(
                     org_name=dmarc_reporter, email=dmarc_reporter,
                 )
-            except:
+            except Exception:
                 msg = "Failed to find or create reporter {}".format(dmarc_reporter)
-                logger.error(msg)
+                logger.exception(msg)
                 raise CommandError(msg)
-        except:
+        except Exception:
             msg = "Unable to get rfc822 report"
-            logger.error(msg)
+            logger.exception(msg)
             Command.save_email(dmarcemail)
 
         out = StringIO()
@@ -141,9 +141,9 @@ class Command(BaseCommand):
             mimepart = dmarcemail.get_payload(0)
             # get the human-readable part of the message
             report.description = mimepart
-        except:
+        except Exception:
             msg = "Unable to get human readable part"
-            logger.warning(msg)
+            logger.exception(msg)
             raise CommandError(msg)
 
         # Get the feedback report
@@ -157,9 +157,9 @@ class Command(BaseCommand):
             report.feedback_report = out.getvalue()
             gen = None
             out = None
-        except:
+        except Exception:
             msg = "Unable to get feedback-report part"
-            logger.error(msg)
+            logger.exception(msg)
             Command.save_email(dmarcemail)
 
         # should check for:
@@ -224,9 +224,9 @@ class Command(BaseCommand):
                     report.date = datetime.fromtimestamp(time)
                     tz_utc = pytz.timezone("UTC")
                     report.date = report.date.replace(tzinfo=tz_utc)
-                except:
-                    msg = "Unable to get date from: {}".format(ls2)
-                    logger.error(msg)
+                except Exception:
+                    msg = "Unable to get date from: {}".format(arrival_date)
+                    logger.exception(msg)
                     report.date = datetime.now()
 
             if "Delivery-Result" in headers:
@@ -249,9 +249,9 @@ class Command(BaseCommand):
             mimepart = dmarcemail.get_payload(2)
             gen.flatten(mimepart)
             report.email_source = out.getvalue()
-        except:
+        except Exception:
             msg = "Unable to get rfc822 part"
-            logger.warning(msg)
+            logger.exception(msg)
             Command.save_email(dmarcemail)
         gen = None
         out = None
@@ -271,10 +271,9 @@ class Command(BaseCommand):
             reporter.save()
             report.reporter = reporter
             report.save()
-        except Exception as e:
+        except Exception:
             msg = "Failed save from {}".format(report.reporter)
-            logger.error(msg)
-            logger.exception(e)
+            logger.exception(msg)
             Command.save_email(dmarcemail)
 
     # XXX not needed??
@@ -292,13 +291,13 @@ class Command(BaseCommand):
                 report.reporter = FBReporter.objects.create(
                     org_name=dmarc_reporter, email=dmarc_reporter,
                 )
-            except:
+            except Exception:
                 msg = "Failed to find or create reporter {}".format(dmarc_reporter)
-                logger.error(msg)
+                logger.exception(msg)
                 raise CommandError(msg)
-        except:
+        except Exception:
             msg = "Unable to get feedback report"
-            logger.warning(msg)
+            logger.exception(msg)
             Command.save_email(dmarcemail)
         report.feedback_source = dmarcemail.get_payload()
         out = StringIO()
@@ -331,9 +330,9 @@ class Command(BaseCommand):
                             report.date = datetime.fromtimestamp(time)
                             tz_utc = pytz.timezone("UTC")
                             report.date = report.date.replace(tzinfo=tz_utc)
-                        except:
+                        except Exception:
                             msg = "Unable to get date from: {}".format(ls2)
-                            logger.error(msg)
+                            logger.exception(msg)
                             report.date = datetime.now()
                 if not report.spf_alignment:
                     if ls0 == "SPF Alignment":
@@ -352,7 +351,7 @@ class Command(BaseCommand):
                         report.email_subject = ls2
         try:
             report.save()
-        except:
+        except Exception:
             msg = "Failed save from {}".format(dmarc_reporter)
-            logger.error(msg)
+            logger.exception(msg)
             Command.save_email(dmarcemail)

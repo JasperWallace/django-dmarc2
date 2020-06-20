@@ -164,7 +164,6 @@ class ImportDMARCFeedbackTestCase(TestCase):
     # https://github.com/sisimai/p5-sisimai/blob/master/set-of-emails/maildir/bsd/arf-16.eml
     def test_feedback_import_actually_abuse(self):
         """Test importing a feedback report thats an abuse report, not a DMARC feedback report"""
-        out = StringIO()
 
         msgerror = None
 
@@ -177,7 +176,7 @@ class ImportDMARCFeedbackTestCase(TestCase):
                 dmarcfeedback)
         except CommandError as cmderror:
             msgerror = str(cmderror)
-        print(msgerror)
+            print(msgerror)
 
         # We should not have any objects for this report
         data = FBReporter.objects.all()
@@ -202,6 +201,7 @@ class ImportDMARCFeedbackTestCase(TestCase):
                 stdout=out)
         except CommandError as cmderror:
             msgerror = str(cmderror)
+            print(msgerror)
         self.assertIn('', out.getvalue())
 
         # We should not have any objects for this report
@@ -255,6 +255,7 @@ class ImportDMARCFeedbackTestCase(TestCase):
                 stdout=out)
         except CommandError as cmderror:
             msgerror = str(cmderror)
+            print(msgerror)
         self.assertIn('', out.getvalue())
 
         # We should not have any objects for this report
