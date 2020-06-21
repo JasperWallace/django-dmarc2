@@ -32,6 +32,24 @@ class ReportAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+class FBReportAdmin(admin.ModelAdmin):
+    """Feedback Report display options"""
+
+    actions = []
+    model = FBReport
+    list_display = ['reporter', 'date', 'source_ip']
+    list_filter = ['date', 'reporter', 'source_ip']
+    readonly_fields = [
+        'reporter', 'date', 'source_ip',
+        'domain', 'email_from', 'email_subject',
+        'spf_alignment', 'dkim_alignment',
+        'dmarc_result', 'description', 'email_source',
+        'feedback_report', 'feedback_source'
+    ]
+    order = ['-id']
+
+    def has_add_permission(self, request):
+        return False
 
 admin.site.register(Report, ReportAdmin)
-admin.site.register(FBReport)
+admin.site.register(FBReport, FBReportAdmin)
