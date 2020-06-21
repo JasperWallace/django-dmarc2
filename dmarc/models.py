@@ -7,9 +7,16 @@
 DMARC models for managing Aggregate Reports
 https://dmarc.org/resources/specification/
 """
+import xml.dom.minidom
+
 from django.contrib.postgres.indexes import GistIndex
 from django.db import models
+from django.utils.safestring import mark_safe
 from netfields import InetAddressField, NetManager
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers.email import EmailLexer
+from pygments.lexers.html import XmlLexer
 
 
 class Reporter(models.Model):
@@ -39,6 +46,19 @@ class Report(models.Model):
 
     def __str__(self):
         return str(self.report_id)
+
+    def nice_xml(self):
+        """returns html formatted report xml"""
+
+        xml_out = self.report_xml
+        # if it's not got many newlines
+        # it's probably just on one, so prettyfy it.
+        if self.report_xml.count("\n") < 2:
+            dom = xml.dom.minidom.parseString(xml_out)
+            xml_out = dom.toprettyxml(indent="  ")
+
+        xml_html = highlight(xml_out, XmlLexer(), HtmlFormatter(noclasses=True))
+        return mark_safe(xml_html)
 
     class Meta:
         """Model constraints"""
@@ -119,6 +139,32 @@ class FBReport(models.Model):
     feedback_source = models.TextField()
 
     objects = NetManager()
+
+    def nice_description(self):
+        """returns html formatted description"""
+
+        email_html = highlight(self.description, EmailLexer(), HtmlFormatter(noclasses=True))
+        return mark_safe(email_html)
+
+    def nice_email_source(self):
+        """returns html formatted source_email"""
+
+        email_html = highlight(self.email_source, EmailLexer(), HtmlFormatter(noclasses=True))
+        return mark_safe(email_html)
+
+    def nice_feedback_report(self):
+        """returns html formatted source_email"""
+
+        email_html = highlight(self.feedback_report, EmailLexer(), HtmlFormatter(noclasses=True))
+        return mark_safe(email_html)
+
+    def nice_feedback_source(self):
+        """returns html formatted feedback source"""
+
+        # MIMELexer might be better here
+        # but the results wern't as nice.
+        email_html = highlight(self.feedback_source, EmailLexer(), HtmlFormatter(noclasses=True))
+        return mark_safe(email_html)
 
     def __str__(self):
         msg = '{} {} {} {} {}'.format(

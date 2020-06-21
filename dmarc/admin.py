@@ -16,7 +16,6 @@ class ReportAdmin(admin.ModelAdmin):
     """Report display options"""
 
     actions = []
-    model = Report
     list_display = ['report_id', 'reporter', 'date_begin']
     list_filter = ['date_begin', 'reporter']
     readonly_fields = [
@@ -25,31 +24,34 @@ class ReportAdmin(admin.ModelAdmin):
         'policy_adkim', 'policy_aspf',
         'policy_p', 'policy_sp',
         'policy_pct',
-        'report_xml'
+        'nice_xml'
     ]
+    exclude = ['report_xml', ]
     order = ['-id']
 
     def has_add_permission(self, request):
         return False
+
 
 class FBReportAdmin(admin.ModelAdmin):
     """Feedback Report display options"""
 
     actions = []
-    model = FBReport
-    list_display = ['reporter', 'date', 'source_ip']
+    list_display = ['reporter', 'date', 'source_ip', 'domain', 'email_from']
     list_filter = ['date', 'reporter', 'source_ip']
+    exclude = ['email_source', 'feedback_report', 'feedback_source', 'description']
     readonly_fields = [
         'reporter', 'date', 'source_ip',
         'domain', 'email_from', 'email_subject',
         'spf_alignment', 'dkim_alignment',
-        'dmarc_result', 'description', 'email_source',
-        'feedback_report', 'feedback_source'
+        'dmarc_result', 'nice_description', 'nice_email_source',
+        'nice_feedback_report', 'nice_feedback_source'
     ]
     order = ['-id']
 
     def has_add_permission(self, request):
         return False
+
 
 admin.site.register(Report, ReportAdmin)
 admin.site.register(FBReport, FBReportAdmin)
