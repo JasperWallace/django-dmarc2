@@ -12,12 +12,9 @@ import datetime
 import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import connection
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
-
-from dmarc.models import Report
 
 logger = logging.getLogger(__name__)
 
@@ -140,36 +137,9 @@ AND dkim_dmarc_result.record_type = 'dkim'
 
 
 @staff_member_required
-def dmarc_index(request):
-    """Index view"""
-    context = {
-        "reports": 'TODO',
-    }
-    return render(request, 'dmarc/report.html', context)
-
-
-@staff_member_required
 def dmarc_report(request):
-    """Paginated DMARC report list"""
-    report_list = Report.objects.select_related(
-        'reporter',
-    ).prefetch_related(
-        'records__results'
-    ).order_by('-date_begin', 'reporter__org_name').all()
-    paginator = Paginator(report_list, 2)
-
-    page = request.GET.get('page')
-    try:
-        reports = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        reports = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        reports = paginator.page(paginator.num_pages)
-
+    """Paginated report list"""
     context = {
-        "reports": reports,
     }
     return render(request, 'dmarc/report.html', context)
 
