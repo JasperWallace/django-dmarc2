@@ -74,11 +74,15 @@ def _sql_cursor(request_args):
         val = request_args['dmarc_filter'] + '%'
         clause = '('
         clause += "lower(dmarc_reporter.org_name) LIKE lower(%s)"
-        clause += " OR "
-        clause += "dmarc_record.source_ip LIKE %s"
         clause += ')'
         sql_where.append(clause)
         sql_params.append(val)
+    if 'dmarc_ip' in request_args and request_args['dmarc_ip']:
+        val = request_args['dmarc_ip']
+        clause = '('
+        clause += "dmarc_record.source_ip <<= inet %s"
+        clause += ')'
+        sql_where.append(clause)
         sql_params.append(val)
 
     sql = """

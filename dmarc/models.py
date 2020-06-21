@@ -7,7 +7,9 @@
 DMARC models for managing Aggregate Reports
 https://dmarc.org/resources/specification/
 """
+from django.contrib.postgres.indexes import GistIndex
 from django.db import models
+from netfields import InetAddressField, NetManager
 
 
 class Reporter(models.Model):
@@ -49,7 +51,7 @@ class Record(models.Model):
     """DMARC report record"""
 
     report = models.ForeignKey(Report, related_name='records', on_delete=models.CASCADE)
-    source_ip = models.CharField(max_length=39)
+    source_ip = InetAddressField(store_prefix_length=False)
     recordcount = models.IntegerField()
     policyevaluated_disposition = models.CharField(max_length=10)
     policyevaluated_dkim = models.CharField(max_length=4)
@@ -57,9 +59,18 @@ class Record(models.Model):
     policyevaluated_reasontype = models.CharField(blank=True, max_length=75)
     policyevaluated_reasoncomment = models.CharField(blank=True, max_length=100)
     identifier_headerfrom = models.CharField(max_length=100)
+    objects = NetManager()
 
     def __str__(self):
         return str(self.source_ip)
+
+    class Meta:
+        indexes = (
+            GistIndex(
+                fields=('source_ip',), opclasses=('inet_ops',),
+                name='dmarc_record_source_ip_idx'
+            ),
+        )
 
 
 class Result(models.Model):
@@ -95,7 +106,7 @@ class FBReport(models.Model):
 
     reporter = models.ForeignKey(FBReporter, on_delete=models.CASCADE)
     date = models.DateTimeField(db_index=True)
-    source_ip = models.CharField(max_length=39)
+    source_ip = InetAddressField(store_prefix_length=False)
     domain = models.CharField(max_length=100)
     email_from = models.CharField(max_length=100, blank=True)
     email_subject = models.CharField(max_length=100, blank=True)
@@ -107,6 +118,8 @@ class FBReport(models.Model):
     feedback_report = models.TextField(blank=True)
     feedback_source = models.TextField()
 
+    objects = NetManager()
+
     def __str__(self):
         msg = '{} {} {} {} {}'.format(
             self.date,
@@ -116,3 +129,11 @@ class FBReport(models.Model):
             self.email_subject
         )
         return msg
+
+    class Meta:
+        indexes = (
+            GistIndex(
+                fields=('source_ip',), opclasses=('inet_ops',),
+                name='dmarc_fbreport_source_ip_idx'
+            ),
+        )

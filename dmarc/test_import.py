@@ -7,6 +7,7 @@
 DMARC tests for importing Aggregate Reports
 https://dmarc.org/resources/specification/
 """
+import ipaddress
 import os
 from datetime import datetime
 from io import StringIO
@@ -91,7 +92,7 @@ class ImportDMARCReportTestCase(TestCase):
         # Record
         data = Record.objects.all()
         self.assertEqual(len(data), 1)
-        self.assertEqual(data[0].source_ip, '80.229.143.200')
+        self.assertEqual(data[0].source_ip, ipaddress.ip_address('80.229.143.200'))
         self.assertEqual(data[0].recordcount, 1)
         self.assertEqual(data[0].policyevaluated_disposition, 'none')
         self.assertEqual(data[0].policyevaluated_dkim, 'pass')
