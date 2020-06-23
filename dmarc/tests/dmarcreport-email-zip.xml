@@ -1,0 +1,44 @@
+From dmarc_support@example.com Wed May 20 01:49:42 2020
+Return-path: <dmarc_support@example.com>
+Envelope-to: root@example.org
+Delivery-date: Wed, 20 May 2020 01:49:42 +0100
+Content-Type: multipart/mixed; boundary="===============4873158481336722952=="
+MIME-Version: 1.0
+Subject: Report Domain: example.org; Submitter: example.com;
+ Report-ID: 36541893901241071531589846400
+From: dmarc_support@example.com
+To: postmaster@example.org
+Message-ID: <dmarc-1589935779@example.com>
+Date: Wed, 20 May 2020 03:49:39 +0300
+Auto-Submitted: auto-generated
+
+
+--===============4873158481336722952==
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+cmVwb3J0IGZyb20gZXhhbXBsZS5vcmcK
+
+--===============4873158481336722952==
+Content-Type: application/x-zip-compressed
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="example.com!example.org!1589846400!1589932800.zip"
+
+UEsDBBQAAgAIADMI11DzPL7hwgEAAAAFAAAxABwAZXhhbXBsZS5jb20hZXhhbXBsZS5vcmchMTU4
+OTg0NjQwMCExNTg5OTMyODAwLnhtbFVUCQADYUbxXvdH8V51eAsAAQToAwAABOgDAACtVMty4yAQ
+vOcrfPNJz8heu4qQ/MHmD1QIRjaxBARQNvv3C5YqgOytyiG6CHqGVk8zI/T8OQ6bD9CGS/G0rfJy
+uwFBJePi9LSdbJ8dts/4AfUArCP0gh827kEalNS2HcESRiyZ0WtE6lMryAj41XMaC8JufndvQK1B
+xVcw5MNI+IDJmdOLeVGZzKnMpwsqZjzkLV/kDO+cEmj2VUYpI1kFTZWRjnVZWdKS9I/98Ve1i5nC
+ycDmREOriThFUq6BDk5c4Kqpm8N+ty9LVMxImgWCXXOOu7r0OX4fyIs1+5eG1C+k5MDp31ZN3cDN
+GRKB0tUvcFTGgoQUwi58xBoV8yIKGNVfcf8OsMLvE3GqLBeAChVFjMJCetDEqKIWV746v1jquK/Y
+XQ6VOpav5Z+VZUZOmkLLFT6UeV0f86p5zGtPHyLpCSon4RSgYl6kwUUIfJBhcm6zNDxbyI2ShlvX
+2Et5MXIn37uoiHF9mhoa+dQvCYmziTV3FLnrj+1AnLmh4D13A7IiOQNhoNteyzG++hiOWO/yIDLZ
+c6vBTINd09+o/marRUPoaRcPls3Khltn/mPmz352NQLFrQv+5NylqAh/s39QSwECHgMUAAIACAAz
+CNdQ8zy+4cIBAAAABQAAMQAYAAAAAAABAAAApIEAAAAAZXhhbXBsZS5jb20hZXhhbXBsZS5vcmch
+MTU4OTg0NjQwMCExNTg5OTMyODAwLnhtbFVUBQADYUbxXnV4CwABBOgDAAAE6AMAAFBLBQYAAAAA
+AQABAHcAAAAtAgAAAAA=
+--===============4873158481336722952==--
+
