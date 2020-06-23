@@ -14,9 +14,11 @@ from io import StringIO
 
 import pytz
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
+from django.urls import reverse
 
 from dmarc.models import FBReport, FBReporter, Record, Report, Reporter, Result
 
@@ -335,3 +337,88 @@ class ImportDMARCFeedbackTestCase(TestCase):
 #
 # Maybe use this?:
 # https://github.com/danielsen/arf
+
+
+class DMARCViewTests(TestCase):
+    """Test our views"""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='user', password='pass')
+        self.user.save()
+
+        self.staffuser = User.objects.create_user(username='staffuser', password='pass')
+        self.staffuser.is_staff = True
+        self.staffuser.save()
+
+    def import_xml_file(self):
+        """Import an xml file to populate the database"""
+        out = StringIO()
+        dmarcreport = os.path.dirname(os.path.realpath(__file__))
+        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport.xml')
+        call_command('importdmarcreport', '--xml', dmarcreport, stdout=out)
+
+    def test_main_view(self):
+        # can't be an anon user
+        response = self.client.get(reverse('dmarc:dmarc_report'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse('admin:login')))
+
+        # and can't be a normal user
+        self.client.login(username='user', password='pass')
+        response = self.client.get(reverse('dmarc:dmarc_report'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse('admin:login')))
+
+        self.client.logout()
+
+        self.client.login(username='staffuser', password='pass')
+        response = self.client.get(reverse('dmarc:dmarc_report'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "DMARC aggregate feedback report")
+
+    def test_csv_view(self):
+        response = self.client.get(reverse('dmarc:dmarc_csv'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse('admin:login')))
+
+        self.client.login(username='staffuser', password='pass')
+
+        response = self.client.get(reverse('dmarc:dmarc_csv'))
+        self.assertEqual(response.status_code, 200)
+
+        rc = ""
+        for r in response.streaming_content:
+            rc += r.decode("utf-8")
+        # XXX maybe instead of an empty file we should just return column
+        # headers?
+        self.assertEqual(len(rc), 0)
+
+        self.import_xml_file()
+        response = self.client.get(reverse('dmarc:dmarc_csv'))
+        self.assertEqual(response.status_code, 200)
+
+        rc = ""
+        for r in response.streaming_content:
+            rc += r.decode("utf-8")
+
+        self.assertTrue("5edbe461-ccda-1e41-abdb-00c0af3f9715" in rc)
+        self.assertEqual(len(rc.split("\n")), 3)
+
+    def test_json_view(self):
+        response = self.client.get(reverse('dmarc:dmarc_json'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse('admin:login')))
+
+        self.client.login(username='staffuser', password='pass')
+
+        response = self.client.get(reverse('dmarc:dmarc_json'))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response.content.decode(), '[]')
+
+        self.import_xml_file()
+        response = self.client.get(reverse('dmarc:dmarc_json'))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "5edbe461-ccda-1e41-abdb-00c0af3f9715")
