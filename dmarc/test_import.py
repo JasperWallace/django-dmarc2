@@ -120,7 +120,7 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(len(data), 0)
 
         dmarcreport = os.path.dirname(os.path.realpath(__file__))
-        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport-email-zip.xml')
+        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport-email-zip.eml')
         call_command('importdmarcreport', '--email', dmarcreport, stdout=out)
         self.assertIn('', out.getvalue())
 
@@ -178,7 +178,7 @@ class ImportDMARCReportTestCase(TestCase):
         self.assertEqual(len(data), 0)
 
         dmarcreport = os.path.dirname(os.path.realpath(__file__))
-        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport-email-gz.xml')
+        dmarcreport = os.path.join(dmarcreport, 'tests/dmarcreport-email-gz.eml')
         call_command('importdmarcreport', '--email', dmarcreport, stdout=out)
         self.assertIn('', out.getvalue())
 
