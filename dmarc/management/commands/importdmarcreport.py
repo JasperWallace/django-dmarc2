@@ -10,13 +10,13 @@ import gzip
 import logging
 import os
 import tempfile
-import xml.etree.ElementTree as ET
 import zipfile
 from argparse import FileType
 from datetime import datetime
 from email import message_from_string
 from io import BytesIO
 
+import defusedxml.ElementTree as ET
 import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
