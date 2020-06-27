@@ -6,11 +6,11 @@
 """Import DMARC Aggregate Reports"""
 
 import difflib
-import gzip
 import logging
 import os
 import tempfile
 import zipfile
+import zlib
 from argparse import FileType
 from datetime import datetime
 from email import message_from_string
@@ -81,7 +81,11 @@ class Command(BaseCommand):
         try:
             root = ET.fromstring(dmarc_xml)
         except Exception:
-            msg = "Processing xml failed: {} // {}".format(dmarc_xml, email)
+            msg = ""
+            if len(dmarc_xml) > 5000 or len(email) > 4000:
+                msg = "Processing xml failed (with large files)"
+            else:
+                msg = "Processing xml failed:\n {}\n//\n{}".format(dmarc_xml, email)
             logger.exception(msg)
             return
 
@@ -289,6 +293,8 @@ class Command(BaseCommand):
         """Get xml from an email"""
         # pylint: disable=too-many-statements
         dmarc_xml = ''
+        # XXX maybe put in settings?
+        max_xml_file_size = 100000000
         logger = logging.getLogger(__name__)
 
         msg = 'Processing email'
@@ -326,7 +332,16 @@ class Command(BaseCommand):
                         files = archive.infolist()
                         # The DMARC report should only contain a single xml file
                         for file_ in files:
-                            dmarc_xml = archive.read(file_)
+                            if file_.file_size < max_xml_file_size and file_.filename.endswith("xml"):
+                                dmarc_xml = archive.read(file_)
+                            elif file_.file_size >= max_xml_file_size and file_.filename.endswith("xml"):
+                                msg = "skipping oversized file %s of size %d" % (file_.filename, file_.file_size)
+                                logger.error(msg)
+                                raise CommandError(msg)
+                            else:
+                                msg = "skipping non-XML file %s of size %d" % (file_.filename, file_.file_size)
+                                logger.error(msg)
+                                raise CommandError(msg)
                         archive.close()
                     except zipfile.BadZipfile:
                         msg = 'Unable to unzip mimepart'
@@ -344,10 +359,12 @@ class Command(BaseCommand):
                     logger.debug(msg)
                     # Reset zip file
                     dmarc_zip.seek(0)
+                    zobj = zlib.decompressobj(zlib.MAX_WBITS | 32)
                     try:
-                        archive = gzip.GzipFile(None, 'rb', 0, dmarc_zip)
-                        dmarc_xml = archive.read()
-                        archive = None
+                        data = dmarc_zip.read()
+                        # Protect against gzip bombs by limiting decompression to max_size
+                        dmarc_xml = zobj.decompress(data, max_xml_file_size)
+                        data = None
                         msg = "DMARC successfully extracted xml from gzip"
                         logger.debug(msg)
                     except Exception:
@@ -361,6 +378,14 @@ class Command(BaseCommand):
                         msg = 'Saved in: {}'.format(temp[1])
                         logger.debug(msg)
                         raise CommandError(msg)
+                    else:
+                        if zobj.unconsumed_tail:
+                            del zobj
+                            del dmarc_xml
+                            del dmarc_zip
+                            msg = "decompression exceeded limit on gzipfile"
+                            logger.error(msg)
+                            raise CommandError(msg)
             else:
                 try:
                     myname = mimepart.get_filename()

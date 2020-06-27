@@ -205,6 +205,38 @@ class ImportDMARCReportTestCase(TestCase):
         data = Report.objects.all()
         self.assertEqual(len(data), 1)
 
+    def test_importdmarcreport_file_large_gz(self):
+        """Test importing email with large gzip file"""
+        out = StringIO()
+        dmarcreport = os.path.dirname(os.path.realpath(__file__))
+        dmarcreport = os.path.join(dmarcreport, 'tests/email-large-gz.eml')
+        msg = ''
+        try:
+            call_command(
+                'importdmarcreport',
+                '--email',
+                dmarcreport,
+                stdout=out)
+        except CommandError as cmderr:
+            msg = str(cmderr)
+        self.assertIn("decompression exceeded limit on gzipfile", msg)
+
+    def test_importdmarcreport_file_large_zip(self):
+        """Test importing email with large zip file"""
+        out = StringIO()
+        dmarcreport = os.path.dirname(os.path.realpath(__file__))
+        dmarcreport = os.path.join(dmarcreport, 'tests/email-large-zip.eml')
+        msg = ""
+        try:
+            call_command(
+                'importdmarcreport',
+                '--email',
+                dmarcreport,
+                stdout=out)
+        except CommandError as cmderr:
+            msg = str(cmderr)
+        self.assertIn("skipping oversized file", msg)
+
 
 class ImportDMARCFeedbackTestCase(TestCase):
     """
