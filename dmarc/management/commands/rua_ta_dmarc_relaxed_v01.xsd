@@ -190,14 +190,16 @@
     <xs:element name="result" type="SPFResultType" minOccurs="1"/>
   </xs:all>
 </xs:complexType>
+
 <!-- This element contains DKIM and SPF results, uninterpreted with respect to DMARC. -->
+<!-- XXX edited from xs:squence to allow 'spf' and 'dkim' to appear in either order, may not actually be valid -->
 <xs:complexType name="AuthResultType">
-  <xs:sequence>
+  <xs:choice maxOccurs="unbounded">
     <!-- There may be no DKIM signatures, or multiple DKIM signatures. -->
     <xs:element name="dkim" type="DKIMAuthResultType" minOccurs="0" maxOccurs="unbounded"/>
     <!-- There will always be at least one SPF result. -->
     <xs:element name="spf" type="SPFAuthResultType" maxOccurs="unbounded"/>
-  </xs:sequence>
+  </xs:choice>
 </xs:complexType>
 <!-- This element contains all the authentication results that were evaluated by the receiving system for the given set of messages. -->
 <xs:complexType name="RecordType">
