@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n %}
+
+{% block meta_title %}{% trans "DMARC report" %}{% endblock %}
+{% block title %}{% trans "DMARC report" %}{% endblock %}
+{% block extrahead %}
+<meta name="robots" content="noindex">
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{% url 'admin:index' %}dmarc">DMARC</a> &rsaquo;
+    DMARC feedback reports
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="dmarcreport">
+    <h1>{% trans "DMARC report" %}</h1>
+    {{ report.nice_xml }}
+
+    <pre>
+    {{ report }}
+    {% for rec in report.records.all %}
+      {{rec.source_ip}}
+      {{rec.recordcount}}
+      {{rec.policyevaluated_disposition}}
+      {{rec.policyevaluated_dkim}}
+      {{rec.policyevaluated_spf}}
+      {{rec.policyevaluated_reasontype}}
+      {{rec.policyevaluated_reasoncomment}}
+      {{rec.identifier_headerfrom}}
+        {% for res in rec.results.all %}{{res.domain}} / {{res.record_type}} / {{res.result }}
+        {% endfor %}
+    {% endfor %}
+    </pre>
+</div>
+{% endblock %}

@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
       case "none":
         var dmarc_filters = [];
         dmarc_download_args = []
-        dmarc_filters.push("DMARC aggregate feedback filter: &nbsp;");
+        dmarc_filters.push("DMARC aggregate feedback filter (click me): &nbsp;");
         dmarc_filters.push("Date: " + $("#dmarc_date_from").val() + "&nbsp;");
         dmarc_download_args.push("dmarc_date_from=" + $("#dmarc_date_from").val());
         dmarc_filters.push("&ndash;&nbsp;" + $("#dmarc_date_to").val() + ";&nbsp;");
@@ -131,7 +131,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
         DMARC_SPF_RESULT = 21,
         DMARC_DKIM_RECORD_TYPE = 22,
         DMARC_DKIM_DOMAIN = 23,
-        DMARC_DKIM_RESULT = 24;
+        DMARC_DKIM_RESULT = 24,
+        DMARC_ID = 25;
     $.ajax({
     url: "{% url 'dmarc:dmarc_json' %}",
     async: true,
@@ -151,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         DMARC_REPORT_ID = 10,
         r[++j] = '<thead><tr>';
         r[++j] = '<th>Organisation</th>';
+        r[++j] = '<th>Date</th>';
         r[++j] = '<th title="DKIM alignment">d</th>';
         r[++j] = '<th title="SPF alignment">s</th>';
         r[++j] = '<th title="Requested Mail Receiver policy">p</th>';
@@ -169,7 +171,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
         r[++j] = '<tbody>';
         for (var key=0, size=result.length; key<size; key++){
             r[++j] ='<tr>';
-            r[++j] = '<td>' + result[key][DMARC_ORG_NAME] + '</td>';
+            r[++j] = '<td><a href="/dmarc/report/view/' + result[key][DMARC_ID] + '/">' + result[key][DMARC_ORG_NAME] + '</a></td>';
+            r[++j] = '<td>' + result[key][DMARC_DATE_BEGIN] + '</td>';
             r[++j] = '<td>' + result[key][DMARC_POLICY_ADKIM] + '</td>';
             r[++j] = '<td>' + result[key][DMARC_POLICY_ASPF] + '</td>';
             r[++j] = '<td>' + result[key][DMARC_POLICY_P] + '</td>';

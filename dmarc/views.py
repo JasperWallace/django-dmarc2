@@ -14,7 +14,9 @@ import logging
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.http import JsonResponse, StreamingHttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+
+from .models import Report
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +110,8 @@ SELECT
   spf_dmarc_result.result AS spf_result,
   dkim_dmarc_result.record_type AS dkim_record_type,
   dkim_dmarc_result.domain AS dkim_domain,
-  dkim_dmarc_result.result AS dkim_result
+  dkim_dmarc_result.result AS dkim_result,
+  dmarc_report.id
 FROM dmarc_reporter
 INNER JOIN dmarc_report
 ON dmarc_report.reporter_id = dmarc_reporter.id
@@ -125,8 +128,8 @@ AND dkim_dmarc_result.record_type = 'dkim'
     if sql_where:
         sql = sql + " WHERE " + "\nAND ".join(sql_where)
 
-    sql_orderby.append('LOWER(dmarc_reporter.org_name)')
     sql_orderby.append('dmarc_report.date_begin')
+    sql_orderby.append('LOWER(dmarc_reporter.org_name)')
     sql_orderby.append('dmarc_record.source_ip')
     sql = sql + "\nORDER BY " + ", ".join(sql_orderby)
 
@@ -181,3 +184,14 @@ def dmarc_json(request):
 
     data = JsonResponse(cursor.fetchall(), safe=False)
     return data
+
+
+@staff_member_required
+def dmarc_view_report(request, id):
+    """View an individual DMARC report"""
+    report = get_object_or_404(Report, pk=id)
+
+    context = {
+        "report": report
+    }
+    return render(request, 'dmarc/view_report.html', context)
