@@ -1,0 +1,132 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n %}
+
+{% block meta_title %}{% trans "DMARC report" %}{% endblock %}
+{% block title %}{% trans "DMARC report" %}{% endblock %}
+{% block extrahead %}
+<meta name="robots" content="noindex">
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{% url 'admin:index' %}dmarc">DMARC</a> &rsaquo;
+    DMARC feedback reports
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="dmarcreport">
+    <h1>{% trans "DMARC report counts" %}</h1>
+    <div id="graph"></div>
+</div>
+
+<script type="text/javascript">
+let data = [
+{% for rec in reports_count %}
+  {
+    date: d3.timeParse("%Y-%m-%d")("{{rec.day|date:'Y-m-d'}}"),
+    value: {{rec.count}}
+  },
+{% endfor %}
+];
+
+//console.log(data);
+
+let margin = ({top: 20, right: 30, bottom: 30, left: 40})
+let height = 500;
+let width = 1000;
+
+var svg = d3.select("#graph")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+//    .attr("viewBox", [0, 0, width, height]);
+
+// Add X axis --> it is a date format
+var x = d3.scaleTime()
+  .domain(d3.extent(data, function(d) { return d.date; }))
+  .range([ 0, width ]);
+
+svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+// Add Y axis
+var y = d3.scaleLinear()
+  .domain([0, d3.max(data, function(d) { return +d.value; })])
+  .range([ height, 0 ]);
+
+svg.append("g")
+  .call(d3.axisLeft(y));
+
+// Add the line
+svg.append("path")
+  .datum(data)
+  .attr("fill", "none")
+  .attr("stroke", "steelblue")
+  .attr("stroke-width", 1.5)
+  .attr("d", d3.line()
+    .x(function(d) { return x(d.date) })
+    .y(function(d) { return y(d.value) })
+    )
+
+/*
+x = d3.scaleUtc()
+    .domain(d3.extent(data, d => d.date))
+    .range([margin.left, width - margin.right])
+
+xAxis = g => g
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
+
+svg.append("g")
+    .call(xAxis);
+
+y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.value)]).nice()
+    .range([height - margin.bottom, margin.top])
+
+
+yAxis = g => g
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        .text(data.y));
+
+svg.append("g")
+    .call(yAxis);
+
+line = d3.line()
+    .defined(d => !isNaN(d.value))
+    .x(d => x(d.date))
+    .y(d => y(d.value))
+
+svg.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line);
+*/
+
+//console.log(chart);
+
+</script>
+
+
+{% endblock %}

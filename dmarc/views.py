@@ -13,6 +13,7 @@ import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
+from django.db.models import Count
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render, get_object_or_404
 
@@ -184,6 +185,23 @@ def dmarc_json(request):
 
     data = JsonResponse(cursor.fetchall(), safe=False)
     return data
+
+
+@staff_member_required
+def dmarc_count_bydate(request):
+    """list the number of reports by day"""
+    # https://docs.djangoproject.com/en/dev/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
+    # https://stackoverflow.com/questions/10154227/django-orm-group-by-day
+    # https://stackoverflow.com/questions/62105144/aggregate-number-of-likes-for-each-day-within-period
+    reports_count = Report.objects.extra(
+        select={'day': 'date( date_begin )'}
+    ).values('day').order_by('date_begin').annotate(
+        count=Count('date_begin')
+    )
+    context = {
+        "reports_count": reports_count
+    }
+    return render(request, 'dmarc/view_count_report_bydate.html', context)
 
 
 @staff_member_required
