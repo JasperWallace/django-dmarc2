@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.db import Error, transaction
 from django.db.utils import IntegrityError
+from lxml import etree
 
 from dmarc.models import Record, Report, Reporter, Result
 
@@ -74,6 +75,17 @@ class Command(BaseCommand):
             logger.debug(msg)
         else:
             msg = "Check usage, please supply a single DMARC report file or email"
+            logger.error(msg)
+            raise CommandError(msg)
+
+        ret = self.validate_dmarc_xml(dmarc_xml)
+        if 'result' not in ret:
+            msg = "Unknown result trying to validate xml file"
+            logger.error(msg)
+            raise CommandError(msg)
+
+        if ret['result'] != 'pass':
+            msg = "failed to validate xml file: %s" % (ret['info'])
             logger.error(msg)
             raise CommandError(msg)
 
@@ -287,6 +299,62 @@ class Command(BaseCommand):
             msg = "didn't get any usable records, deleteing the report"
             logger.error(msg)
             report.delete()
+
+    @staticmethod
+    def validate_dmarc_xml(dmarc_xml):
+        """Validate the XML"""
+        # taken from:
+        # https://github.com/jorritfolmer/TA-dmarc/blob/master/bin/dmarc/dir2splunk.py#L403
+        logger = logging.getLogger(__name__)
+
+        xsdfilelist = ["rua_ta_dmarc_relaxed_v01.xsd",
+                       "rua_draft-dmarc-base-00-02.xsd",
+                       "rua_rfc7489.xsd",
+                       "rua_ta_dmarc_minimal_v01.xsd"]
+        # this one seems to work ok
+        # but need to check the spf/dkim order in auth_result
+        xsdfile = xsdfilelist[0]
+        dmarc_path = os.path.dirname(__file__)
+        info = {}
+
+        xsdfile_long = os.path.join(dmarc_path, xsdfile)
+
+        # Read XML and XSD files
+        try:
+            xmldata = dmarc_xml.encode("utf-8")
+            xsddata = open(xsdfile_long, 'r').read()
+        except Exception as e:
+            logger.warning("validate_dmarc_xml: error opening with %s" % str(e))
+            info["result"] = "fail"
+            info["info"] = "%s" % str(e)
+            return info
+
+        # Parse the XML and XSD
+        try:
+            xml = etree.XML(xmldata)
+            xsd = etree.XML(xsddata)
+            xmlschema = etree.XMLSchema(xsd)
+        except Exception as e:
+            logger.warning("validate_xml_xsd: xml parse error with %s" % (str(e)))
+            info["result"] = "fail"
+            info["info"] = "%s" % str(e)
+            return info
+
+        # Validate XML against XSD
+        try:
+            xmlschema.assertValid(xml)
+        except Exception as e:
+            logger.debug(
+                "validate_xml_xsd: xsd validation failed against %s with %s" % (xsdfile, str(e)))
+            info["result"] = "fail"
+            info["info"] = "%s" % str(e)
+            return info
+        else:
+            logger.debug("validate_xml_xsd: xsd validation successful against %s" % (xsdfile))
+            info["result"] = "pass"
+            return info
+
+        return {}
 
     @staticmethod
     def get_xml_from_email(email):
