@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n %}
+
+{% block meta_title %}{% trans "DMARC report" %}{% endblock %}
+{% block title %}{% trans "DMARC report" %}{% endblock %}
+{% block extrahead %}
+<meta name="robots" content="noindex">
+{{ bokeh_includes | safe}}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{% url 'admin:index' %}dmarc">DMARC</a> &rsaquo;
+    DMARC feedback reports
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="dmarcreport">
+    <h1>{% trans "DMARC report counts" %}</h1>
+</div>
+{{ div | safe }}
+{{ script | safe }}
+
+{% endblock %}

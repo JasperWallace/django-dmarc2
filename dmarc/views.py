@@ -16,6 +16,9 @@ from django.db import connection
 from django.db.models import Count
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render, get_object_or_404
+from bokeh.resources import CDN
+from bokeh.embed import components
+from bokeh.plotting import figure
 
 from .models import Report
 
@@ -213,3 +216,51 @@ def dmarc_view_report(request, id):
         "report": report
     }
     return render(request, 'dmarc/view_report.html', context)
+
+
+@staff_member_required
+def dmarc_bokeh(request):
+    """try a bokeh graph"""
+    # https://docs.djangoproject.com/en/dev/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
+    # https://stackoverflow.com/questions/10154227/django-orm-group-by-day
+    # https://stackoverflow.com/questions/62105144/aggregate-number-of-likes-for-each-day-within-period
+    reports_count = Report.objects.extra(
+        select={'day': 'date( date_begin )'}
+    ).values('day').order_by('date_begin').annotate(
+        count=Count('date_begin')
+    )
+
+    data = {
+        "day": [],
+        "count": [],
+    }
+
+    for r in reports_count:
+        data["day"].append(datetime.datetime.combine(r["day"], datetime.datetime.min.time()))
+        data["count"].append(r["count"])
+
+    title = 'reports by day'
+
+    plot = figure(title=title,
+                  x_axis_label='Date',
+                  x_axis_type="datetime",
+                  y_axis_label='Reports',
+                  plot_width=1000,
+                  plot_height=400,
+                  )
+
+#    plot.line(x="day", y="count", source=data, legend_label='reports', line_width=1)
+    plot.vbar(x="day", top="count",
+              source=data, legend_label='reports',
+              width=1,
+              )
+    script, div = components(plot, CDN)
+
+    cdn = CDN.render()
+
+    context = {
+        "div": div,
+        "script": script,
+        "bokeh_includes": cdn
+    }
+    return render(request, 'dmarc/view_bokeh.html', context)

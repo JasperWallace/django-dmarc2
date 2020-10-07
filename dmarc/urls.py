@@ -18,4 +18,5 @@ urlpatterns = [
     url("^report/json/$", views.dmarc_json, name='dmarc_json'),
     url(r"^report/view/(?P<id>\d+)/$", views.dmarc_view_report, name='dmarc_report'),
     url("^report/counts_by_date/$", views.dmarc_count_bydate, name='dmarc_count_bydate'),
+    url("^report/bokeh/$", views.dmarc_bokeh, name='dmarc_bokeh'),
 ]
